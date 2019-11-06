@@ -4,4 +4,4 @@
 
 ## :coffee: C++
 笔者通过阅读《C++ Primer》为自己梳理的知识点，相信也能为你带来帮助。
-- [C++ 知识点](https://github.com/Fightjiang/Interview-Notes/C++)
+- [C++ 知识点](./C%2B%2B)
