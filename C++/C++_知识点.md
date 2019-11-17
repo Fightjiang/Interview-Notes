@@ -264,11 +264,24 @@ extern double pi = 3.1416; //定义
     double *dp = static_cast<double *>(p) ; // 正确：将 void* 转换回初始的指针类型
     ```
     * **const_cast:** 只能改变运算对象的底层 const 
-    ```
+    ```C++
     const char *pc ; 
     char *p = const_char<char*> (pc) ;// 正确，但是通过 p 写值是未定义的行为
     ```
     * **reinterpret_cast：**通常为运算对象的位模式提供较低层次上的重新解释。  
      
  **强制类型转换干扰了正常的类型检查，因此我们强烈建议程序员避免使用强制类型转换**
-    
+ 
+### 第五章：语句
+
+简单语句我基本上都掌握了，所以这章就直接跳过了。
+    * while 、for 和 do while 语句，执行迭代操作。
+    * if 和 switch 语句，提供条件分支结构
+    * continue 语句，终止循环的当前一次迭代
+    * break 语句，退出循环或者 switch 语句
+    * goto 语句，将控制权转移到一条带标签的语句
+    * try 和 catch , 将一段可能抛出异常的语句序列括在花括号里构成 try 语句块 。 catch 子句负责处理代码抛出的异常。
+    * throw 表达式语句，存在于代码块中，将控制权转移到相关的 catch 子句 。
+    * return 语句，终止函数的执行。
+
+
