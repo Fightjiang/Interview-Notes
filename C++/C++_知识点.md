@@ -231,6 +231,44 @@ extern double pi = 3.1416; //定义
     }
     ```
     
-    
+### 第四章：表达式
+**一元运算符**：作用于一个运算对象的运算符是一元运算符，如取地址符`（&）`和解引用符`（ * ）`；
+**二元运算符**：作用于两个运算对象的运算符是二元运算符，如相等运算符`（==）`和乘法运算符`（ * ）`；
 
+* **sizeof 运算符：** sizeof 运算符返回一条表达式或一个类型名字所占的字符数。sizeof 运算符满足右结合律，其所得的值是一个` size_t `类型。
+    ```C++
+    Sales_data data , *p ; 
+    sizeof(Sales_data) ; // 存储 Sales_data 类型的对象所占的空间大小
+    sizeof data ; // data 的类型的大小，即 sizeof(Sales_data) 
+    sizeof p ; // 指针所占的空间大小
+    sizeof *p == sizeof(*p); // p 所指类型的空间大小，即 sizeof(Sales_data) 
+    sizeof data.revenue ; //Sales_data 的 revenue 成员对应类型的大小
+    sizeof Sales_data::revenue; // 另一种获取 revenue 大小的方式
+    ```
+    sizeof 运算符的结果部分地依赖于其作用的类型
+    * 对 char 或者类型为 char 的表达式执行 sizeof 类型，结果得 1 。
+    * 对引用类型执行 sizeof 运算得到被引用对象所占空间的大小 。
+    * 对指针执行 sizeof 运算得到指针本身所占空间的大小 。 
+    * 对解引用指针执行 sizeof 运算得到指针指向的对象所占空间的大小，指针不需有效 。 
+    * 对数组执行 sizeof 运算得到整个数组所占空间的大小，等价于对数组中所有的元素各执行一次 sizeof 运算并将所得结果求和。 注意， sizeof 运算不会把数组转换成指针来处理。
+    * 对 string 对象或 vector 对象执行 sizeof 运算只返回该类型固定部分的大小，不会计算对象中元素的个数。
+    ```C++
+    constexpr size_t sz = sizeof(ia)/sizeof(*ia) ; // 返回 ia 的元素数量 
+    int arr2[sz]; // 正确：sizeof 返回一个常量表达式。
+    ```
+* **显式转换：** 有时我们希望显式地将对象强制转换成另外一种类型。
+	* **static_cast：**对于有明确定义的类型转换，只要不包含底层 const ，都可以使用 static_cast 。
+	```C++
+    double slope = static_cast<double>(j) / i ; // 进行强制类型转换以便执行浮点数除法
+    void *p = &d ; // 正确：任何非常量对象的地址都能存入 void*
+    double *dp = static_cast<double *>(p) ; // 正确：将 void* 转换回初始的指针类型
+    ```
+    * **const_cast:** 只能改变运算对象的底层 const 
+    ```
+    const char *pc ; 
+    char *p = const_char<char*> (pc) ;// 正确，但是通过 p 写值是未定义的行为
+    ```
+    * **reinterpret_cast：**通常为运算对象的位模式提供较低层次上的重新解释。  
+     
+ **强制类型转换干扰了正常的类型检查，因此我们强烈建议程序员避免使用强制类型转换**
     
