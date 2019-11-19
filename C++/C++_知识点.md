@@ -284,4 +284,82 @@ extern double pi = 3.1416; //定义
     * throw 表达式语句，存在于代码块中，将控制权转移到相关的 catch 子句 。
     * return 语句，终止函数的执行。
 
+### 第六章：函数
 
+* **const** 形参和实参 ： 和其他初始化过程一样，当用实参初始化形参时会忽略掉顶层 const 。换句话说，形参的顶层 const 被忽略了，当形参有顶层 const 时，传给它常量对象或者非常量对象都是可以的。
+```C++
+const int ci = 42 // 不能改变 ci ,const 是顶层的
+int i = ci ; // 正确，当拷贝 ci 时，忽略了它的顶层 const 
+int * const p = &i ; // const 是顶层，不能给 p 给赋值
+*p = 0 ;// 正确，通过 p 改变对象的内容是允许的，现在 i 变成了 0 
+void fcn(const int i) {/* fcn 能够读取 i , 但是不能向 i 写值 */}
+void fcn(int i){/**/} //  错误，重复定义了 fcn(int) ,顶层 const 被忽略掉了。
+```
+* **指针或引用形参与 const** : 形参的初始化方式和变量的初始化方式是一样的，我们可以使用非常量初始化一个底层 const 对象，但是返过来不行，同时一个普通的引用必须用同类型的对象初始化。
+```C++
+int i = 42 ; 
+const int *cp = &i ; // 正确，但是 cp 不能改变 i ;
+const int &r = i ; // 正确，但是 r 不能改变 i ; 
+const int &r2 = 42 ; // 正确
+int *p = cp ; // 错误，p 的类型和 cp 的类型不匹配
+int &r3 = r ; // 错误，r3 的类型和 r 的类型不匹配
+int &r4 = 42 ; // 错误，不能用字母值初始化一个非常量的引用
+将同样的初始化规则应用到参数传递上可得如下形似：
+int i = 0 ;
+const int ci = i ;
+string::size_type str = 0 ; 
+reset(&i) ; // 调用形参类型是 int* 的 reset 函数
+reset(&ci) ; // 错误，不能用指向 const int 对象的指针初始化 int* 
+reset(i) ; // 调用形参类型是 int & 的 reset 函数
+reset(ci); // 错误，不能把普通引用绑定到 const 对象 ci 上
+reset(42) ; // 错误，不能把普通引用绑定到字面值上
+reset(str) ;// 错误，类型不匹配，str 是无符号类型
+```
+尽量使用常量引用：
+```C++
+find_char("Hello World" , 'o' , str) ; // 正确, find_char 的第一个形参是对常量的引用
+string::size_type find_char(string &s , char c , string::size_type &occurs) ; // 不良设计，第一个形参的类型应该是 const string & ;
+则只能将 find_char 函数作用于 string 对象，类似下面这个样的调用
+find_char("Hello World",'o',str) 将在编译时发送错误
+```
+* **内联函数**：一般来说，内联机制用于优化规模较小、流程直接、频繁调用的函数。
+```C++
+cout << shorterString(s1,s2) << endl ;
+将在编译过程中展开成类似于下面的形式
+cout << (s1.size() < s2.size() ? s1 : s2 ) <<endl ;
+从而消除了 shorterString 函数的运行时开销，在 shorterString 函数的返回类型前面加上关键字 inline ，这样就可以将它声明成内联函数了:
+inline const string & shorterString(const string &s1 , const string &s2){
+	return s1.size() <= s2.size() ? s1 : s2 ; 
+}
+```
+* **constexpr 函数**：是指能用于常量表达式的函数，定义 constexpr 函数的方法与其他函数类似，不过要遵循几项约定:函数的返回类型及所有形参的类型都得是字面值类型，而且函数体中必须有且只有一条 return 语句;
+```C++
+constexpr int new_sz() { return 42 ; }
+constexpr int foo = new_sz() ; // 正确： foo 是一个常量表达式
+constexpr sieze_t scale(size_t cnt) { return new_sz() * cnt ; }
+当 scale 的实参是常量表达式时，它的返回值也是常量表达式；反之则不然 ；
+int arr[scale(2)] ; // 正确； scale(2) 是常量表达式
+int i = 2 ; // i 不是常量表达式
+int a2[scale(i)]; // 错误： scale(i) 不是常量表达式
+```
+*costexpr 函数不一定返回常量表达式* 
+* **函数指针**：函数指针指向的是函数而非对象。要想声明一个可以指向该函数的指针，只需要用指针替换函数名即可 。
+```C++
+bool lengthCompare(const string & , const string &) ; // 比较两个 string 对象的长度
+pf 指向一个函数 ， 该函数的参数是两个 const string 的引用，返回值是 bool 类型
+bool (*pf)(const string & , const string &) ; // 未初始化
+```
+当我们把函数名作为一个值使用时，该函数自动地转换成指针。
+```C++
+pf = lengthCompare ; // pf 指向名为 lengthCompare 的函数
+pf = &lengthCompare ; // 等价的赋值语句：取地址符是可选的
+bool b1 = pf("hello" , "goodbye"); // 调用 lengthCompare 函数
+bool b2 = (*pf)("hello" , "goodbye") ; // 一个等价的调用
+bool b3 = lengthCompare("hello" , "goodbye"); //另一个等价的调用
+string::size_type sumLength(const string& , const string&) ; 
+bool cstringCompare(const char* , const char*) ; 
+pf = 0 ; // 正确 , pf 不指向任何函数
+pf = sumLength ; // 错误，返回类型不匹配
+pf = cstringCompare ; // 错误，形参类型不匹配
+pf = lenthCompare ; // 正确，函数和指针的类型精确匹配
+```
