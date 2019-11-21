@@ -332,6 +332,7 @@ inline const string & shorterString(const string &s1 , const string &s2){
 	return s1.size() <= s2.size() ? s1 : s2 ; 
 }
 ```
+**定义在类内部的函数是隐式的 inline 函数**
 * **constexpr 函数**：是指能用于常量表达式的函数，定义 constexpr 函数的方法与其他函数类似，不过要遵循几项约定:函数的返回类型及所有形参的类型都得是字面值类型，而且函数体中必须有且只有一条 return 语句;
 ```C++
 constexpr int new_sz() { return 42 ; }
@@ -363,3 +364,234 @@ pf = sumLength ; // 错误，返回类型不匹配
 pf = cstringCompare ; // 错误，形参类型不匹配
 pf = lenthCompare ; // 正确，函数和指针的类型精确匹配
 ```
+
+### 第七章：类
+类的基本思想是**数据抽象**和**封装** ，数据抽象是一种依赖于**接口**和**实现**分离的编程技术。
+编译器分两步处理类，首先编译成员的声明，然后才轮到成员函数体，因此，成员函数体可以随意使用类中的其他成员而无须在意这些成员出现的次序 。 
+* **定义改进的 Sales_data 类**
+```C++
+stuct Sales_data{
+	std::string isbn() const { return bookNo ; }
+    Sales_data& combine(const Sales_data&) ;
+    double avg_price() const ; 
+    std::string bookNo ; 
+    unsigned units_sold = 0 ; 
+    double revenue = 0.0 ; 
+};
+// Sales_data 的非成员接口函数
+Sales_data add(const Sales_data& , const Sales_data&) ; 
+std :: ostream &print(std:: ostream& , const Sales_data&) ; 
+std :: istream &read(std::istream& , Sales_data&) ; 
+```
+* **引入 const 成员函数**: C++ 语言的做法是允许把 const 关键字放在成员函数的参数列表之后，此时，紧跟在参数列表后面的 const 表示 this 是一个指向常量的指针，像这样使用 const 的成员函数被称作**常量成员函数**。
+```C++
+std::string isbn() const { return bookNo ; }
+这里, const 的作用是修改隐式 this 指针的类型, 默认情况， this 的类型是指向类类型非常量版本的常量指针。
+如果 isbn 是一个普通函数而且 this 是一个普通的指针参数，则我们应该把 this 声明成 const Sales_data * const , 毕竟，在 isbn 的函数体内不会改变 this 所指向的对象，所以把 this 设置为指向常量的指针有助于提高函数的灵活性。
+// 伪代码，说明隐式的 this 指针是如何使用的，下面的代码是非法的；因为我们不能显式地定义自己的 this 指针 , 谨记此处的 this 是一个指向常量的指针，因为 isbn 是一个常量成员
+std:: string Sales_data::isbn(const Sales_data *const this)
+{ return this->isbn ; }
+```
+    1. **常量对象，以及常量对象的引用或指针都只能调用常量成员函数; **
+    2. 一个 const 成员函数如果以引用的形式返回 \*this , 那么它的返回类型将是常量引用.
+    
+
+* **定义一个返回 this 对象的函数** ： 调用该函数的对象代表的是赋值运算符左侧的运算对象，右侧运算对象则通过显式的实参被传入函数。
+```C++
+Sale_data& Sales_data :: combine(const Sales_data &rhs)
+{
+	units_sold += rhs.units_sold ; // 把 rhs 的成员加到 this 对象的成员上
+    revenue += rhs.revenue ;
+    return *this ; // 返回调用该函数的对象
+}
+当我们的交易处理程序调用如下的函数时，
+total.combine(trans) ; // 更新变量 total 当前的值
+total 的地址被绑定到隐式的 this 参数上，而 rhs 绑定到了 trans 上，因此，当 combine 执行下面的语句时:
+units_sold += rhs.units_sold ; // 把 rhs 的成员加到 this 对象的成员中
+效果等同于求 total.units_sold 和 trans.units_sold 的和，然后把结果保存到 total.units_sold 中。
+```
+
+* **构造函数** : 每个类都分别定义了它的对象被初始化 的方式 ， 类通过一个或几个特殊的成员函数来控制其对象的初始化过程，这些函数叫做**构造函数**
+    1. 默认构造函数： 在 C++ 11 新标准中，如果我们需要默认的行为，那么可以通过在参数列表后面写上 = default 来要求编译器生成构造函数。
+    ```C++
+    Sales_data() = default ;  
+    ```
+    2. 构造函数初始化列表：构造函数初始值是成员名字的一个列表，每个名字后面紧跟括号括起来的成员初始值，不同成员的初始化通过括号分隔开来。下面两个构造函数体都是空的，这是因为这些构造函数的唯一目的就是为数据成员赋初值，一旦没有其他任务需要执行，函数体也就空了。
+    ```C++
+    Sales_data(const std::string &s) : bookNo(s) { }
+    Sales_data(const std::string &s , unsigned n ,double p ) : bookNo(s) , units_sold(n) , revenue(p*n) { }
+	```
+    3. 构造函数的初始值有时必不可少,如果成员是 const 、引用，或者属于某种未提供默认构造函数的类类型，我们必须通过构造函数初始值列表为这些成员提供初值 。 
+    ```C++
+    class ConstRef {
+    public : 
+    	ConstRef(int li) ; 
+    private : 
+    	int i ; 
+        const int ci ; 
+        int &ri ; 
+    };
+    
+    ConstRef :: ConstRef(int ii)
+    {
+    	i = ii ;  // 正确
+        ci = ii ;  // 错误 ： 不能给 const 赋值
+        ri = i ;  // 错误 : ri 没被初始化
+    }
+    
+    随着构造函数体一开始执行，初始化就完成了。 我们初始化 const 或者引用类型的数据成员的唯一机会就是通过构造函数初始值，因此该正确的应该是这样的：
+    ConstRef::ConstRef(int ii) : i(ii) ,ci(ii) , ri(i) { } 
+    ```
+    4. 成员初始化的顺序，成员初始化顺序与它们在类定义中的出现顺序呢一致，第一个成员先被初始化，然后第二个，以此类推。
+    ```C++
+    class X {
+    	int i ; 
+        int j ; 
+    public : 
+    	// 未定义的， i 在 j 之前被初始化
+        X (int val) : j(val) , i(j) { }
+    } ; 
+    在此例中，从构造函数初始值的形式上来看仿佛是先用 val 初始化了 j , 然后再用 j 初始化 i , 实际上, i 先被初始化，因此这个初始值的效果是试图使用未定义的值 j 初始化 i ! 
+    ```
+* **使用 class 或 struct 关键字**:唯一的一点区别是， struct 和 class 的默认访问权限不太一样，如果我们使用 struct 关键字，则定义在第一个访问说明符之前的成员是 public 的；相反,如果我们使用 class 关键字，则这些成员是 private 的。
+* **友元**：类可以允许其他类或者函数访问它的非公有成员，方法是令其他类或者函数成为它的**友元**。
+```C++
+class Sales_data {
+//为 Sales_data 的非成员函数所做的友元声明
+friend Sales_data add(const Sales_data& , const Sales_data&) ; 
+friend std::istream &read(std::istream& , Sales_data&) ; 
+friend std::ostream &print(std::ostream& , const Sales_data&) ; 
+public : 
+	Sales_data() = default ; 
+    Sales_data(const std :: string &s , unsigned n , double p) : 
+        bookNo(s) , units_sold(n) , revenue(p*n) { }
+    Sales_data(const std::string &s ) : bookNo(s) { }
+    Sales_data(std:: istream&) ; 
+    std::string isbn() const { return bookNo; }
+    Sales_data &combine (const Sales_data &) ; 
+private :
+    std:: string bookNo ;
+    unsigned units_sold = 0 ; 
+    double revenue = 0.0 ; 
+};
+// Sales_data 接口的非成员组成部分的声明
+Sales_data add(const Sales_data & , const Sales_data &) ; 
+std::istream &read(std::istream & , Sales_data &) ; 
+std::ostream &print(std::ostream& , const Sales_data &) ; 
+```
+    1. **友元声明只能出现在类定义的内部，但是在类内出现的具体位置不限。**一般来说，最好在类定义开始或结束前的位置集中声明友元。  
+    2. 如果一个类指定了友元类，则友元类的成员函数可以访问此类包括非公有成员在内的所有成员，必须要注意的一点是，友元关系不存在传递性。也就是说，如果 window_mgr 有它自己的友元，则这些友元并不能理所当然地具有访问 Screen 的特权。
+    ```C++
+    	class Screen {
+        	// Window_mgr 的成员可以访问 Screen 类的私有成员
+            friend class Window_mgr ; 
+            // Screen 类的剩余部分
+        }
+    ```
+    3. 尽管重载函数的名字相同，但它们仍然是不同的函数，因此，如果一个类想把一组重载函数声明成它的友元，它需要对这组函数中的每一个分别声明。
+    4. 类和非成员函数的声明不是必须在它们的友元声明之前，当一个名字第一次出现在一个友元声明中，我们隐式地假定该名字在当前作用域中是可见的。然而，友元本身不一定真的声明在当前作用域中。
+    ```C++
+    struct X {
+    	friend void f() { /* 友元函数可以定义在类的内部*/ }
+        X() { f() ; } // 错误 , f 还没有被声明
+        void g() ; 
+        void h() ; 
+    };
+    void X :: g() { return f() : } // 错误 ： f 还没有被声明
+    void f() ; // 声明那个定义在 X 中的函数
+    void X::h() { return f() ; } // 正确，现在 f 的声明在作用域中了
+    ```
+* **可变数据成员**：有时会发生这样一种情况，我们希望能修改类的某一个数据成员，即使是在一个 const 成员函数内，可以通过在变量的声明中加入 **mutable** 关键字做到这一点。
+```C++
+我们将给 Screen 添加一个名为 access_ctr 的可变成员，通过它我们可以追踪每个 Screen 的成员函数被调用了多少次。
+class Screen {
+public : 
+	void some_member() const ; 
+private :
+	mutable size_t access_ctr ; // 即使在一个 const 对象内也能被修改
+    // 其他成员与之前的版本一致
+};
+void Screen::some_member() const 
+{
+	++access_ctr ; // 保存一个计数值，用于记录成员函数被调用的次数
+    // 该成员需要完成的其他工作
+}
+```
+* **类的静态成员**： 有的时候需要它的一些成员与类的本身直接相关，而不是与类的各个对象保持关联。我们通过在成员的声明之前加上关键字 static 使得其与类关联在一起。和其他成员一样，静态成员可以是 public 的或 private 的 ， 静态数据成员的类型可以是常量、引用、指针、类型等。 
+```C++
+举个例子，我们定义一个类，用它表示银行的账号记录：
+class Account {
+public :
+	void calculate () { amount += amount * interestRate ; }
+    static double rate() { return interestRate ; }
+    static void rate (double) ; 
+private : 
+	std:: string owner ; 
+    double amount ; 
+    static double interestRate  ;
+    static double initRate() ; 
+};
+```
+类的静态成员存在于任何对象之外， 对象中不包含任何与静态数据成员有关的数据。因此，每个 Account 对象将包含两个数据成员：owener 和 amount 。只存在一个 interestRate 对象而且它被所有 Account 对象共享 。  
+类似的，静态成员函数也不与任何对象绑定在一起，它们不包含 this 指针。作为结果，静态成员函数不能声明成 const 的，而且我们也不能在 static 函数体内使用 this 指针。这一限制即适用于 this 的显示使用，也对调用非静态成员的隐式使用有效。 
+	1. 使用类的静态成员 
+	```C++
+    double r ; 
+    r = Account::rate() ; // 使用作用域运算符访问静态成员
+    Account ac1 ; 
+    Account *ac2 = &ac1 ; 
+    // 调用静态成员函数 rate 的等价形式
+    r = ac1.rate() ; // 通过 Account 的对象或引用
+    r = ac2->rate() ; // 通过指向 Account 对象的指针
+    成员函数不用通过作用域运算符就能直接使用静态成员；
+    ```
+    2. 定义静态成员：和其他成员函数一样，我们既可以在类的内部也可以在类的外部定义静态成员函数。**当在类的外部定义静态成员时，不能重复 static 关键字，该关键字只出现在类内部的声明语句。**
+    ```C++
+    void Account::rate (double newRate) 
+    {
+    	interestRate = newRate ; 
+    }
+    ```
+    3. 定义静态数据成员：因为静态数据成员不属于类的任何一个对象，所以他们并不是在创建类的对象时被定义的。这意味着它们不是由类的构造函数初始化的，而且一般来说，我们不能在类的内部初始化静态成员，相反的，必须在类的外部定义和初始化每个静态成员，和其他对象一样，一个静态数据成员只能定义一次。静态数据成员定义在任何函数之外，因此一旦它被定义，就将一直存在于程序的整个生命周期中。
+    ```C++
+    // 定义并初始化一个静态成员
+    double Account :: interestRate = initRate() ; 
+    ```
+    4. 静态成员的类内初始化：通常情况下，类的静态成员不应该在类的内部初始化。然而，我们可以为静态成员提供 const 整数类型的类内初始值，不过要求静态成员必须是字面值常量类型的 constexpr 。
+    ```C++
+    class Account {
+    public : 
+    	static double rate() { return interestRate ; }
+        static void rate(double) ; 
+    private : 
+    	static constexpr int period = 30 ; // period 是常量表达式
+        double daily_tbl(period) ;
+    }
+    
+    如果在类的内部提供了一个初始值，则成员的定义不能再指定一个初始值了：
+    // 一个不带初始值的静态成员的定义
+    constexpr int Account :: period ; // 初始值在类的定义内提供
+    ```
+    5. 静态成员能用于某些场景，而普通成员不能 。
+    ```C++
+    class Bar {
+    public : 
+    	//....
+    private : 
+    	static Bar mem1 ; // 正确：静态成员可以是不完全类型 
+        Bar *mem2 ; // 正确：指针成员可以是不完全类型
+        Bar mem3 ; // 错误：数据成员必须是完全类型
+    }
+    class Screen ; // Screen 类的声明
+    // 不完全类型：我们知道 Screen 是一个类类型，但是不清楚它到底包含那些成员。换句话说，我们必须首先完成类的定义，然后编译器才能知道存储该数据类型需要多少空间。
+                                                                                                                      
+    class Screen {
+    public : 
+    	// bkground 表示一个在类中稍后定义的静态成员
+        Screen& clear( char = bkground) ; 
+    private : 
+    	static const char bkground ; 
+    };
+    // 非静态数据成员不能作为默认实参，因为它的值本身属于对象的一部分，这么做的结果是无法真正提供一个对象以便从中获取成员的值，最终将引发错误。
+    ```
+
