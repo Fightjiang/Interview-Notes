@@ -455,30 +455,30 @@ units_sold += rhs.units_sold ; // 把 rhs 的成员加到 this 对象的成员�
     ```
 * **使用 class 或 struct 关键字**:唯一的一点区别是， struct 和 class 的默认访问权限不太一样，如果我们使用 struct 关键字，则定义在第一个访问说明符之前的成员是 public 的；相反,如果我们使用 class 关键字，则这些成员是 private 的。
 * **友元**：类可以允许其他类或者函数访问它的非公有成员，方法是令其他类或者函数成为它的**友元**。
-```C++
-class Sales_data {
-//为 Sales_data 的非成员函数所做的友元声明
-friend Sales_data add(const Sales_data& , const Sales_data&) ; 
-friend std::istream &read(std::istream& , Sales_data&) ; 
-friend std::ostream &print(std::ostream& , const Sales_data&) ; 
-public : 
+    ```C++
+    class Sales_data {
+    //为 Sales_data 的非成员函数所做的友元声明
+    friend Sales_data add(const Sales_data& , const Sales_data&) ; 
+    friend std::istream &read(std::istream& , Sales_data&) ; 
+    friend std::ostream &print(std::ostream& , const Sales_data&) ; 
+    public : 
 	Sales_data() = default ; 
-    Sales_data(const std :: string &s , unsigned n , double p) : 
-        bookNo(s) , units_sold(n) , revenue(p*n) { }
-    Sales_data(const std::string &s ) : bookNo(s) { }
-    Sales_data(std:: istream&) ; 
-    std::string isbn() const { return bookNo; }
-    Sales_data &combine (const Sales_data &) ; 
-private :
-    std:: string bookNo ;
-    unsigned units_sold = 0 ; 
-    double revenue = 0.0 ; 
-};
-// Sales_data 接口的非成员组成部分的声明
-Sales_data add(const Sales_data & , const Sales_data &) ; 
-std::istream &read(std::istream & , Sales_data &) ; 
-std::ostream &print(std::ostream& , const Sales_data &) ; 
-```
+        Sales_data(const std :: string &s , unsigned n , double p) : 
+	bookNo(s) , units_sold(n) , revenue(p*n) { }
+        Sales_data(const std::string &s ) : bookNo(s) { }
+        Sales_data(std:: istream&) ; 
+        std::string isbn() const { return bookNo; }
+        Sales_data &combine (const Sales_data &) ; 
+    private :
+        std:: string bookNo ;
+        unsigned units_sold = 0 ; 
+        double revenue = 0.0 ; 
+    };
+    // Sales_data 接口的非成员组成部分的声明
+    Sales_data add(const Sales_data & , const Sales_data &) ; 
+    std::istream &read(std::istream & , Sales_data &) ; 
+    std::ostream &print(std::ostream& , const Sales_data &) ; 
+    ```
     1. **友元声明只能出现在类定义的内部，但是在类内出现的具体位置不限。**一般来说，最好在类定义开始或结束前的位置集中声明友元。  
     2. 如果一个类指定了友元类，则友元类的成员函数可以访问此类包括非公有成员在内的所有成员，必须要注意的一点是，友元关系不存在传递性。也就是说，如果 window_mgr 有它自己的友元，则这些友元并不能理所当然地具有访问 Screen 的特权。
     ```C++
@@ -534,8 +534,8 @@ private :
 ```
 类的静态成员存在于任何对象之外， 对象中不包含任何与静态数据成员有关的数据。因此，每个 Account 对象将包含两个数据成员：owener 和 amount 。只存在一个 interestRate 对象而且它被所有 Account 对象共享 。  
 类似的，静态成员函数也不与任何对象绑定在一起，它们不包含 this 指针。作为结果，静态成员函数不能声明成 const 的，而且我们也不能在 static 函数体内使用 this 指针。这一限制即适用于 this 的显示使用，也对调用非静态成员的隐式使用有效。 
-	1. 使用类的静态成员 
-	```C++
+    1. 使用类的静态成员 
+    ```C++
     double r ; 
     r = Account::rate() ; // 使用作用域运算符访问静态成员
     Account ac1 ; 
@@ -567,7 +567,6 @@ private :
     	static constexpr int period = 30 ; // period 是常量表达式
         double daily_tbl(period) ;
     }
-    
     如果在类的内部提供了一个初始值，则成员的定义不能再指定一个初始值了：
     // 一个不带初始值的静态成员的定义
     constexpr int Account :: period ; // 初始值在类的定义内提供
