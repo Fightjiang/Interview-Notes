@@ -384,17 +384,16 @@ pf = lenthCompare ; // 正确，函数和指针的类型精确匹配
     std :: istream &read(std::istream& , Sales_data&) ; 
 ```
 * **引入 const 成员函数**: C++ 语言的做法是允许把 const 关键字放在成员函数的参数列表之后，此时，紧跟在参数列表后面的 const 表示 this 是一个指向常量的指针，像这样使用 const 的成员函数被称作**常量成员函数**。
-```C++
-    std::string isbn() const { return bookNo ; }
-    这里, const 的作用是修改隐式 this 指针的类型, 默认情况， this 的类型是指向类类型非常量版本的常量指针。
-    如果 isbn 是一个普通函数而且 this 是一个普通的指针参数，则我们应该把 this 声明成 const Sales_data * const , 毕竟，在 isbn 的函数体内不会改变 this 所指向的对象，所以把 this 设置为指向常量的指针有助于提高函数的灵活性。
-    // 伪代码，说明隐式的 this 指针是如何使用的，下面的代码是非法的；因为我们不能显式地定义自己的 this 指针 , 谨记此处的 this 是一个指向常量的指针，因为 isbn 是一个常量成员
-    std:: string Sales_data::isbn(const Sales_data *const this)
-    { return this->isbn ; }
-```
-
     1. **常量对象，以及常量对象的引用或指针都只能调用常量成员函数;**
     2. 一个 const 成员函数如果以引用的形式返回 \*this , 那么它的返回类型将是常量引用.
+    ```C++
+        std::string isbn() const { return bookNo ; }
+        这里, const 的作用是修改隐式 this 指针的类型, 默认情况， this 的类型是指向类类型非常量版本的常量指针。
+        如果 isbn 是一个普通函数而且 this 是一个普通的指针参数，则我们应该把 this 声明成 const Sales_data * const , 毕竟，在 isbn 的函数体内不会改变 this 所指向的对象，所以把 this 设置为指向常量的指针有助于提高函数的灵活性。
+        // 伪代码，说明隐式的 this 指针是如何使用的，下面的代码是非法的；因为我们不能显式地定义自己的 this 指针 , 谨记此处的 this 是一个指向常量的指针，因为 isbn 是一个常量成员
+        std:: string Sales_data::isbn(const Sales_data *const this)
+        { return this->isbn ; }
+    ```
 * **定义一个返回 this 对象的函数** ： 调用该函数的对象代表的是赋值运算符左侧的运算对象，右侧运算对象则通过显式的实参被传入函数。
 ```C++
     Sale_data& Sales_data :: combine(const Sales_data &rhs)
@@ -453,7 +452,7 @@ pf = lenthCompare ; // 正确，函数和指针的类型精确匹配
     ```
 * **使用 class 或 struct 关键字**:唯一的一点区别是， struct 和 class 的默认访问权限不太一样，如果我们使用 struct 关键字，则定义在第一个访问说明符之前的成员是 public 的；相反,如果我们使用 class 关键字，则这些成员是 private 的。
 * **友元**：类可以允许其他类或者函数访问它的非公有成员，方法是令其他类或者函数成为它的**友元**。
-```C++
+    ```C++
     class Sales_data {
     //为 Sales_data 的非成员函数所做的友元声明
     friend Sales_data add(const Sales_data& , const Sales_data&) ; 
@@ -476,16 +475,16 @@ pf = lenthCompare ; // 正确，函数和指针的类型精确匹配
     Sales_data add(const Sales_data & , const Sales_data &) ; 
     std::istream &read(std::istream & , Sales_data &) ; 
     std::ostream &print(std::ostream& , const Sales_data &) ; 
-```
-
+    ```
     1. **友元声明只能出现在类定义的内部，但是在类内出现的具体位置不限。**一般来说，最好在类定义开始或结束前的位置集中声明友元。  
+    
     2. 如果一个类指定了友元类，则友元类的成员函数可以访问此类包括非公有成员在内的所有成员，必须要注意的一点是，友元关系不存在传递性。也就是说，如果 window_mgr 有它自己的友元，则这些友元并不能理所当然地具有访问 Screen 的特权。
     ```C++
-    	class Screen {
-        	// Window_mgr 的成员可以访问 Screen 类的私有成员
-            friend class Window_mgr ; 
-            // Screen 类的剩余部分
-        }
+    class Screen {
+        // Window_mgr 的成员可以访问 Screen 类的私有成员
+        friend class Window_mgr ; 
+        // Screen 类的剩余部分
+    }
     ```
     3. 尽管重载函数的名字相同，但它们仍然是不同的函数，因此，如果一个类想把一组重载函数声明成它的友元，它需要对这组函数中的每一个分别声明。
     4. 类和非成员函数的声明不是必须在它们的友元声明之前，当一个名字第一次出现在一个友元声明中，我们隐式地假定该名字在当前作用域中是可见的。然而，友元本身不一定真的声明在当前作用域中。
@@ -531,7 +530,6 @@ pf = lenthCompare ; // 正确，函数和指针的类型精确匹配
         static double initRate() ; 
     };
 ```
-
     类的静态成员存在于任何对象之外， 对象中不包含任何与静态数据成员有关的数据。因此，每个 Account 对象将包含两个数据成员：owener 和 amount 。只存在一个 interestRate 对象而且它被所有 Account 对象共享 。  
     类似的，静态成员函数也不与任何对象绑定在一起，它们不包含 this 指针。作为结果，静态成员函数不能声明成 const 的，而且我们也不能在 static 函数体内使用 this 指针。这一限制即适用于 this 的显示使用，也对调用非静态成员的隐式使用有效。 
     1. 使用类的静态成员 
@@ -633,10 +631,9 @@ C++ 语言不直接处理输入输出，而是通过一族定义在标准库中�
     cin.setstate(old_state) ; // 将 cin 置为原有状态
 ```
 * **管理输出缓冲**：每个输出流都管理一个缓冲区， 用来保存程序读写的数据 。例如，如果执行下面的代码 ,  文本串可能立即打印出来，但也有可能被操作系统保存在缓冲区中，随后再打印，有了缓冲区机制，操作系统就可以将程序的多个输出操作组合成单一的系统级写操作。由于设备的写操作可能很耗时，允许操作系统将多个输出操作组合为单一的设备写操作可以带来很大的性能提升。
-```C++
+    ```C++
     os << "please enter a value : " ; 
-```
-
+    ```
     1. 刷新输出缓存区
     ```C++
     cout <<"hi!" << endl ; // 输出 hi 和一个换行，然后刷新缓冲区 
