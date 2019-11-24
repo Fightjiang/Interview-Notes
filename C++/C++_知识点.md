@@ -370,34 +370,32 @@ pf = lenthCompare ; // 正确，函数和指针的类型精确匹配
 编译器分两步处理类，首先编译成员的声明，然后才轮到成员函数体，因此，成员函数体可以随意使用类中的其他成员而无须在意这些成员出现的次序 。 
 * **定义改进的 Sales_data 类**
 ```C++
-stuct Sales_data{
-	std::string isbn() const { return bookNo ; }
-    Sales_data& combine(const Sales_data&) ;
-    double avg_price() const ; 
-    std::string bookNo ; 
-    unsigned units_sold = 0 ; 
-    double revenue = 0.0 ; 
-};
-// Sales_data 的非成员接口函数
-Sales_data add(const Sales_data& , const Sales_data&) ; 
-std :: ostream &print(std:: ostream& , const Sales_data&) ; 
-std :: istream &read(std::istream& , Sales_data&) ; 
+    stuct Sales_data{
+        std::string isbn() const { return bookNo ; }
+        Sales_data& combine(const Sales_data&) ;
+        double avg_price() const ; 
+        std::string bookNo ; 
+        unsigned units_sold = 0 ; 
+        double revenue = 0.0 ; 
+    };
+    // Sales_data 的非成员接口函数
+    Sales_data add(const Sales_data& , const Sales_data&) ; 
+    std :: ostream &print(std:: ostream& , const Sales_data&) ; 
+    std :: istream &read(std::istream& , Sales_data&) ; 
 ```
 * **引入 const 成员函数**: C++ 语言的做法是允许把 const 关键字放在成员函数的参数列表之后，此时，紧跟在参数列表后面的 const 表示 this 是一个指向常量的指针，像这样使用 const 的成员函数被称作**常量成员函数**。
-    ```C++
+```C++
     std::string isbn() const { return bookNo ; }
     这里, const 的作用是修改隐式 this 指针的类型, 默认情况， this 的类型是指向类类型非常量版本的常量指针。
     如果 isbn 是一个普通函数而且 this 是一个普通的指针参数，则我们应该把 this 声明成 const Sales_data * const , 毕竟，在 isbn 的函数体内不会改变 this 所指向的对象，所以把 this 设置为指向常量的指针有助于提高函数的灵活性。
     // 伪代码，说明隐式的 this 指针是如何使用的，下面的代码是非法的；因为我们不能显式地定义自己的 this 指针 , 谨记此处的 this 是一个指向常量的指针，因为 isbn 是一个常量成员
     std:: string Sales_data::isbn(const Sales_data *const this)
     { return this->isbn ; }
-    ```
-    1. **常量对象，以及常量对象的引用或指针都只能调用常量成员函数; **
+```
+    1. **常量对象，以及常量对象的引用或指针都只能调用常量成员函数;**
     2. 一个 const 成员函数如果以引用的形式返回 \*this , 那么它的返回类型将是常量引用.
-    
-
 * **定义一个返回 this 对象的函数** ： 调用该函数的对象代表的是赋值运算符左侧的运算对象，右侧运算对象则通过显式的实参被传入函数。
-    ```C++
+```C++
     Sale_data& Sales_data :: combine(const Sales_data &rhs)
     {
         units_sold += rhs.units_sold ; // 把 rhs 的成员加到 this 对象的成员上
@@ -409,8 +407,7 @@ std :: istream &read(std::istream& , Sales_data&) ;
     total 的地址被绑定到隐式的 this 参数上，而 rhs 绑定到了 trans 上，因此，当 combine 执行下面的语句时:
     units_sold += rhs.units_sold ; // 把 rhs 的成员加到 this 对象的成员中
     效果等同于求 total.units_sold 和 trans.units_sold 的和，然后把结果保存到 total.units_sold 中。
-    ```
-
+```
 * **构造函数** : 每个类都分别定义了它的对象被初始化 的方式 ， 类通过一个或几个特殊的成员函数来控制其对象的初始化过程，这些函数叫做**构造函数**
     1. 默认构造函数： 在 C++ 11 新标准中，如果我们需要默认的行为，那么可以通过在参数列表后面写上 = default 来要求编译器生成构造函数。
     ```C++
@@ -455,30 +452,30 @@ std :: istream &read(std::istream& , Sales_data&) ;
     ```
 * **使用 class 或 struct 关键字**:唯一的一点区别是， struct 和 class 的默认访问权限不太一样，如果我们使用 struct 关键字，则定义在第一个访问说明符之前的成员是 public 的；相反,如果我们使用 class 关键字，则这些成员是 private 的。
 * **友元**：类可以允许其他类或者函数访问它的非公有成员，方法是令其他类或者函数成为它的**友元**。
-    ```C++
-    class Sales_data {
-    //为 Sales_data 的非成员函数所做的友元声明
-    friend Sales_data add(const Sales_data& , const Sales_data&) ; 
-    friend std::istream &read(std::istream& , Sales_data&) ; 
-    friend std::ostream &print(std::ostream& , const Sales_data&) ; 
-    public : 
-	Sales_data() = default ; 
-        Sales_data(const std :: string &s , unsigned n , double p) : 
-	bookNo(s) , units_sold(n) , revenue(p*n) { }
-        Sales_data(const std::string &s ) : bookNo(s) { }
-        Sales_data(std:: istream&) ; 
-        std::string isbn() const { return bookNo; }
-        Sales_data &combine (const Sales_data &) ; 
-    private :
-        std:: string bookNo ;
-        unsigned units_sold = 0 ; 
-        double revenue = 0.0 ; 
-    };
-    // Sales_data 接口的非成员组成部分的声明
-    Sales_data add(const Sales_data & , const Sales_data &) ; 
-    std::istream &read(std::istream & , Sales_data &) ; 
-    std::ostream &print(std::ostream& , const Sales_data &) ; 
-    ```
+```C++
+class Sales_data {
+//为 Sales_data 的非成员函数所做的友元声明
+friend Sales_data add(const Sales_data& , const Sales_data&) ; 
+friend std::istream &read(std::istream& , Sales_data&) ; 
+friend std::ostream &print(std::ostream& , const Sales_data&) ; 
+public : 
+Sales_data() = default ; 
+    Sales_data(const std :: string &s , unsigned n , double p) : 
+bookNo(s) , units_sold(n) , revenue(p*n) { }
+    Sales_data(const std::string &s ) : bookNo(s) { }
+    Sales_data(std:: istream&) ; 
+    std::string isbn() const { return bookNo; }
+    Sales_data &combine (const Sales_data &) ; 
+private :
+    std:: string bookNo ;
+    unsigned units_sold = 0 ; 
+    double revenue = 0.0 ; 
+};
+// Sales_data 接口的非成员组成部分的声明
+Sales_data add(const Sales_data & , const Sales_data &) ; 
+std::istream &read(std::istream & , Sales_data &) ; 
+std::ostream &print(std::ostream& , const Sales_data &) ; 
+```
     1. **友元声明只能出现在类定义的内部，但是在类内出现的具体位置不限。**一般来说，最好在类定义开始或结束前的位置集中声明友元。  
     2. 如果一个类指定了友元类，则友元类的成员函数可以访问此类包括非公有成员在内的所有成员，必须要注意的一点是，友元关系不存在传递性。也就是说，如果 window_mgr 有它自己的友元，则这些友元并不能理所当然地具有访问 Screen 的特权。
     ```C++
@@ -502,36 +499,36 @@ std :: istream &read(std::istream& , Sales_data&) ;
     void X::h() { return f() ; } // 正确，现在 f 的声明在作用域中了
     ```
 * **可变数据成员**：有时会发生这样一种情况，我们希望能修改类的某一个数据成员，即使是在一个 const 成员函数内，可以通过在变量的声明中加入 **mutable** 关键字做到这一点。
-    ```C++
-    我们将给 Screen 添加一个名为 access_ctr 的可变成员，通过它我们可以追踪每个 Screen 的成员函数被调用了多少次。
-    class Screen {
-    public : 
-        void some_member() const ; 
-    private :
-        mutable size_t access_ctr ; // 即使在一个 const 对象内也能被修改
-        // 其他成员与之前的版本一致
-    };
-    void Screen::some_member() const 
-    {
-        ++access_ctr ; // 保存一个计数值，用于记录成员函数被调用的次数
-        // 该成员需要完成的其他工作
-    }
-    ```
+```C++
+我们将给 Screen 添加一个名为 access_ctr 的可变成员，通过它我们可以追踪每个 Screen 的成员函数被调用了多少次。
+class Screen {
+public : 
+    void some_member() const ; 
+private :
+    mutable size_t access_ctr ; // 即使在一个 const 对象内也能被修改
+    // 其他成员与之前的版本一致
+};
+void Screen::some_member() const 
+{
+    ++access_ctr ; // 保存一个计数值，用于记录成员函数被调用的次数
+    // 该成员需要完成的其他工作
+}
+```
 * **类的静态成员**： 有的时候需要它的一些成员与类的本身直接相关，而不是与类的各个对象保持关联。我们通过在成员的声明之前加上关键字 static 使得其与类关联在一起。和其他成员一样，静态成员可以是 public 的或 private 的 ， 静态数据成员的类型可以是常量、引用、指针、类型等。 
-    ```C++
-    举个例子，我们定义一个类，用它表示银行的账号记录：
-    class Account {
-    public :
-        void calculate () { amount += amount * interestRate ; }
-        static double rate() { return interestRate ; }
-        static void rate (double) ; 
-    private : 
-        std:: string owner ; 
-        double amount ; 
-        static double interestRate  ;
-        static double initRate() ; 
-    };
-    ```
+```C++
+举个例子，我们定义一个类，用它表示银行的账号记录：
+class Account {
+public :
+    void calculate () { amount += amount * interestRate ; }
+    static double rate() { return interestRate ; }
+    static void rate (double) ; 
+private : 
+    std:: string owner ; 
+    double amount ; 
+    static double interestRate  ;
+    static double initRate() ; 
+};
+```
     类的静态成员存在于任何对象之外， 对象中不包含任何与静态数据成员有关的数据。因此，每个 Account 对象将包含两个数据成员：owener 和 amount 。只存在一个 interestRate 对象而且它被所有 Account 对象共享 。  
     类似的，静态成员函数也不与任何对象绑定在一起，它们不包含 this 指针。作为结果，静态成员函数不能声明成 const 的，而且我们也不能在 static 函数体内使用 this 指针。这一限制即适用于 this 的显示使用，也对调用非静态成员的隐式使用有效。 
     
@@ -583,8 +580,7 @@ std :: istream &read(std::istream& , Sales_data&) ;
         Bar mem3 ; // 错误：数据成员必须是完全类型
     }
     class Screen ; // Screen 类的声明
-    // 不完全类型：我们知道 Screen 是一个类类型，但是不清楚它到底包含那些成员。换句话说，我们必须首先完成类的定义，然后编译器才能知道存储该数据类型需要多少空间。
-                                                                                                                      
+    // 不完全类型：我们知道 Screen 是一个类类型，但是不清楚它到底包含那些成员。换句话说，我们必须首先完成类的定义，然后编译器才能知道存储该数据类型需要多少空间。    
     class Screen {
     public : 
     	// bkground 表示一个在类中稍后定义的静态成员
@@ -595,3 +591,146 @@ std :: istream &read(std::istream& , Sales_data&) ;
     // 非静态数据成员不能作为默认实参，因为它的值本身属于对象的一部分，这么做的结果是无法真正提供一个对象以便从中获取成员的值，最终将引发错误。
     ```
 
+### 第八章：IO库
+C++ 语言不直接处理输入输出，而是通过一族定义在标准库中的类型来处理IO。
+	1. istream (输入流)类型，提供输入操作 。 
+	2. ostream (输出流)类型，提供输出操作 。
+	3. cin , 一个 istream 对象，从标准输入读取数据 。 
+	4. cout , 一个 ostream 对象 ， 向标准输出写入数据 。
+	5. cerr , 一个 ostream 对象 ， 通常用于输出程序错误信息，写入到标准错误 。 
+	6.  >> 运算符 ， 用来从一个 istream 对象读取输入数据 。
+	7.  << 运算符 ， 用来向一个 ostream 对象写入输出数据 。
+	8.  getline 函数 ， 从一个给定的 istream 读取一行数据 ， 存入一个给定的 string 对象中 。 
+* **IO 对象无拷贝或赋值**：进行 IO 操作的函数通常以引用方式传递和返回流。 
+```C++
+ofstream out1 , out2 ;  
+out1 = out2 ;  // 错误 ： 不能对流对象赋值
+ofstream print(ofstream) ;  // 错误：不能初始化 ofstream 参数
+out2 = print(out2) ; // 错误： 不能拷贝流对象
+```
+* **条件状态** : IO 类定义的一些函数和标志，可以帮助我们访问和操纵流的条件状态 。
+```
+    1. strm::iostate:　strm 是一种 IO 类型 ，iostate 是一种机器相关的类型，提供了表达条件状态的完整功能。
+    2. strm::badbit 用来指出流已崩溃
+    3. strm::failbit 用来指出一个 IO 操作失败了
+    4. strm::eofbit 用来指出流到达了文件结束
+    5. strm::goodbit 用来指出流末处于错误状态。此值保证为零。
+    6. s.eof() 若流 s 的 eofbit 置位 ， 则返回 true 
+    7. s.fail() 若流 s 的 failbit 或 badbit 置位 ， 则返回 true  
+    8. s.bad() 若流 s 的 badbit 置位 ， 则返回 true 
+    9. s.good() 若流 s 处于有效状态，则返回 true 
+    10. s.clear() 将流 s 中所有条件状态位复位，将流的状态设置为有效。返回 void 
+    11. s.clear(flags) 根据给定的 flags 标志位，将流 s 中对应条件状态位复位 。flags 的类型为 strm::iostate 。 返回 void 
+    12. s.setstate(flags) 根据给定的 flags 标志位，将流 s 中对应条件状态位置位 。flags 的类型为 strm::iostate 。 返回 void
+    13. s.rdstate() 返回流 s 的当前条件状态，返回值类型为 strm::iostate 
+```
+```C++
+auto old_state = cin.rdstate() ; // 记住 cin 的当前状态
+cin.clear() ; // 使 cin 有效
+process_input(cin) ; // 使用 cin 
+cin.setstate(old_state) ; // 将 cin 置为原有状态
+```
+* **管理输出缓冲**：每个输出流都管理一个缓冲区， 用来保存程序读写的数据 。例如，如果执行下面的代码 ,  文本串可能立即打印出来，但也有可能被操作系统保存在缓冲区中，随后再打印，有了缓冲区机制，操作系统就可以将程序的多个输出操作组合成单一的系统级写操作。由于设备的写操作可能很耗时，允许操作系统将多个输出操作组合为单一的设备写操作可以带来很大的性能提升。
+```C++
+os << "please enter a value : " ; 
+```
+    1. 刷新输出缓存区
+    ```C++
+    cout <<"hi!" << endl ; // 输出 hi 和一个换行，然后刷新缓冲区 
+    cout <<"hi!" << flush ; // 输出 hi , 然后刷新缓冲区，不附加任何额外字符
+    cout << "hi!" << ends ;  // 输出 hi  和 一个空字符 ， 然后刷新缓冲区
+    ```
+    2. unitbuf 操纵符： 在每次输出操作后都刷新缓冲区 。
+    ```C++
+    cout << unitbuf ; // 所有输出操作后都会立即刷新缓冲区
+    cout << nounitbuf ; // 回到正常的缓冲方式
+    ```
+    3. 关联输入和输出流: 当一个输入流被关联到一个输出流时，任何试图从输入流读取数据的操作都会先刷新关联的输出流。
+    我们即可以将一个 istream 对象关联到另一个 ostream ，也可以将一个 ostream 关联到另一个 ostream ； 
+    ```C++
+    cin.tie(&cout); // 仅仅是用来展示: 标准库将 cin 和 cout 关联在一起
+    // old_tie 指向当前关联到 cin 的流 （如果有的话）
+    ostream *old_tie = cin.tie(nullptr) ; // cin 不再与其他流关联
+    // 将 cin 与 cerr 关联；这不是一个好主意，因为 cin 应该关联到 cout 
+    cin.tie(&cerr) ; // 读取 cin 会刷新 cerr 而不是 cout 
+    cin.tie(old_tie) ; // 重建 cin 和 cout 间的正常关联
+    ```
+* 文件输入输出
+	1. 文件模式
+	```
+    in 以读方式打开
+    out 以写方式打开
+    app 每次写操作前均定位到文件末尾
+    ate 打开文件后立即定位到文件末尾
+    trunc 截断文件
+    binary 以二进制方式进行IO
+    ```
+    ```C++
+    // 在这几条语句中 , file1 都被截断
+    ofstream out("file1") ; // 隐含以输出模式打开文件并截断文件
+    ofstream out2("file1" , ofstream :: out) ; // 隐含地截断文件
+    ofstream out3("file1" , ofstream :: out | ofstream :: trunc) ; 
+    // 为了保留文件内容， 我们必须显示指定 app 模式
+    ofstream app("file2" , ofstream :: app ) ; // 隐含为输出模式 
+    ofsteram app2("file2" , ofstream::out | ofstream::app) ; 
+    ```
+    保留被 ofstream 打开的文件中已有数据的唯一办法是显式指定 app 或 in 模式
+    3. 每次调用 open 时都会确定文件模式
+    ```C++
+    ofstream out ; // 未指定文件打开模式
+    out.open("test.txt"); // 模式隐含设置为输出和截断
+    out.close() ; // 关闭 out , 以使我们将其用于其他文件
+    out.open("test2.txt" , ofstream::app) ; // 模式为输出和追加
+    out.close(); 
+    ```
+	本人对文件操作一直很迷，这次算是系统学了一下，可以看 [代码](./file_deal.cpp)
+* string 流
+```
+    stringstream 特有的操作
+    1. sstream strm ; strm 是一个未绑定的 stringstream 对象。sstream 是头文件 sstream 中定义的一个类型 。
+    2. sstream strm(s); strm 是一个 sstream 对象 ， 保存 string s 的一个拷贝。此构造函数是 explicit 的
+    3. strm.str() 返回 strm 保存的 string 的拷贝
+    4. strm.str(s) 将 string s 拷贝到 strm 中 。 返回 void 
+```
+	1. 使用 istringstream 
+    ```C++
+    /*
+    假定有一个文件，列出了一些人和他们的电话号码。某些人只有一个号码，而另一些人则有多个--家庭电话、工作电话、移动电话等 。
+    */
+    // 假定文件内容是这样的
+    morgan 20155552368 8625550123
+    drew 78946464891
+    iee 48674861 4687614313 798713158
+    struct PersonInfo {
+        string name ; 
+        vector<string> phone ; 
+    }
+    string line , word ;  // 分别保存来自输入的一行和单词
+    vector<PersonInfo> people ;  // 保存来自输入的所有记录
+    while(getline(cin , line)) {
+        PersonInfo info ;// 创建一个保存此记录数据的对象
+        istringstream record(line) ; // 将记录绑定到刚读入的行
+        record >> info.name ; 
+        while(record >> word){
+            info.phone.push_back(word) ; 
+        }
+        people.push_back(info) ; 
+    }
+    ```
+	2. 使用 ostringstream : 接上面一个例子，我们可能需要验证电话号码并改变其格式
+    ```C++
+    for(const auto &entry : people) { // 对 people 中每一项
+        ostringstream formatted , badNums ; 
+        for(const auto &nums : entry.phones ) {
+            is(!valid(nums)) {
+                badNums << " " << nums ;  // 将数的字符串存入 badNums ; 
+            }else {
+                formatted << " " << format(nums) ; // 将带格式的字符串 “写入” formatted ; 
+            }
+        }
+        if(badNums.str().empty()) 
+            os << entry.name << " " << formatted.str() << endl ; 
+        else 
+            cerr << "input error: " << entry.name << " invalid number(s) " << badNums.str() <<endl ; 
+    }
+    ```
