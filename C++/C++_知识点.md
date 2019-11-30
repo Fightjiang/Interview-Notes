@@ -743,27 +743,30 @@ C++ 语言不直接处理输入输出，而是通过一族定义在标准库中�
 ### 第九章：顺序容器
 
 * **顺序容器类型**
-```
+    ```
     1. vector ： 可变大小数组，支持快速随机访问，在尾部之外的位置插入或删除元素可能很慢。
     2. deque ： 双端队列 ， 支持快速随机访问，在头尾位置插入/删除速度很快 。 
     3. list : 双向链表 ， 只支持双向顺序访问，在 list 中任何位置进行插入/删除操作速度都很快 。
     4. forward_list : 单向链表，只支持单向顺序访问，在链表任何位置进行插入/删除操作速度都很快。
     5. array : 固定大小数组，支持快速随机访问，不能添加和删除元素 。
     6. string ：与 vector 相似的容器， 但专门用于保存字符，随机访问快，在尾部插入/删除速度快 。 
-通常，使用 vector 是最好的选择，除非你有很好的理由选择其他容器。
-```
+    ```
+    通常，使用 vector 是最好的选择，除非你有很好的理由选择其他容器。
+    
 * **容器定义和初始化**
-```
+    ```
 	1. C c ：默认构造函数，如果 C 是一个 array , 则 c 中元素按默认方式初始化，否则 c 为空。
 	2. C c1(c2) 、C c1 = c2 : C1 初始化为 C2 的拷贝， C1 和 C2 必须是相同类型（即，它们必须是相同的容器类型，且保存的是相同的元素类型，对于 array 类型，两者还必须具有相同大小）
 	3. C c{a,b,c....} 、C c = {a,b,c...} : c 初始化为初始化列表中元素的拷贝，列表中元素的类型必须与 C 的元素类型相容， 对于 array 类型，列表中元素数目必须等于或小于 array 的大小，任何遗漏的元素都进行值初始化 。 
-	4. C c(b,e) : c 初始化为迭代器 b 和 e 指定范围中的元素的拷贝，范围中元素的类型必须与 C 的元素类型相容（array 不适用）。	
-只有顺序容器（不包括 array） 的构造函数才能接受大小参数	
-	5. C seq(n) ： seq 包含 n 个元素，这些元素进行了值初始化 ， 此构造函数是 explicit 的 。 
+	4. C c(b,e) : c 初始化为迭代器 b 和 e 指定范围中的元素的拷贝，范围中元素的类型必须与 C 的元素类型相容（array 不适用）。
+    ```
+    只有顺序容器（不包括 array） 的构造函数才能接受大小参数	
+	```
+    5. C seq(n) ： seq 包含 n 个元素，这些元素进行了值初始化 ， 此构造函数是 explicit 的 。 
 	6. C seq(n,t) : seq 包含 n 个初始化为值 t 的元素 。
-```
+    ```
 * **标准库 array 具有固定大小** :
-```C++
+    ```C++
     1. 当定义一个 array 时，除了指定元素类型，还要指定容器大小 。 
     array<int , 42 > // 类型为：保存 42 个 int 的数组
     array<string , 10 > // 类型为：保存 10 个 string 的数组
@@ -782,22 +785,24 @@ C++ 语言不直接处理输入输出，而是通过一族定义在标准库中�
     int cpy[10] = digs ; // 错误：内置数组不支持拷贝或赋值
     array<int,10> digits = {0,1,2,3,4,5,6,7,8,9}; 
     array<int,10> copy = digits ; // 正确：只要数组类型匹配即合法
-```
+    ```
 * **赋值 与 swap**
     * 容器赋值运算 ： 
-    ```
+        ```
         1. c1 = c2 : 将 c1 中的元素替换为 c2 中元素的拷贝， c1 和 c2 必须具有相同的类型 。 
         2. c = {a , b , c} ; 将 c1 中元素替换为初始化列表中元素的拷贝（array 不适用）
         3. swap(c1 , c2 ) 、c1.swap(c2) : 交换 c1 和 c2 中的元素， c1 和 c2 必须具有相同的类型 , swap 通常比从 c2 向 c1 拷贝元素快的多 。
-    assign 操作不适用于关联容器 和 array 
+        ```
+        assign 操作不适用于关联容器 和 array
+        ```
         4. seq.assign(b,e) : 将 seq 中的元素替换为迭代器 b 和 e 所表示的范围中的元素 ， 迭代器 b 和 e 不能指向 seq 中的元素 。
         5. seq.assign(il) :  将 seq 中的元素替换为初始化列表 il 中的元素 。
         6. seq.assign(n,t) : 将 seq 中的元素替换为 n 个值为 t 的元素 。 
-
-     赋值相关运算会导致指向左边容器内部的迭代器、引用和指针失效。而 swap 操作将容器内容交换不会导致指向容器的迭代器、引用和指针失效（容器类型为 array 和 string 的情况除外）。
-    ```
+        ```
+        赋值相关运算会导致指向左边容器内部的迭代器、引用和指针失效。而 swap 操作将容器内容交换不会导致指向容器的迭代器、引用和指针失效（容器类型为 array 和 string 的情况除外）。
+        
     * 赋值
-    ```C++
+        ```C++
         1. 赋值运算符将其左边容器中的全部元素替换为右边容器中元素的拷贝 ：
         c1 = c2 ; // 将 c1 的内容替换为 c2 中元素的拷贝
         c1 = {a , b , c} ; // 赋值后 ，c1 大小为 3 
@@ -805,82 +810,86 @@ C++ 语言不直接处理输入输出，而是通过一族定义在标准库中�
         array<int , 10 > a2 = {0} ; // 所有元素值均为 0 
         a1 = a2 ; // 替换 a1 中的元素
         a2 = {0} ; // 错误：不能将一个花括号列表赋予数组
+        ```
         第一个赋值运算法后 ，左边容器将与右边容器相等。 如果两个容器原来大小不同，复制运算后两者的大小都与右边容器的原大小相同。第二个赋值运算后 ， c1 的 size 变为 3 ， 即花括号列表中值的数目 。 
-    ```
+        
     * 使用 assign (仅顺序容器)
-    ```C++
-    list<string> names ; 
-    vector<const char* > oldstyle ; 
-    names = oldstyle ; // 错误 ， 容器类型不匹配
-    names.assign(oldstyle.cbegin() , oldstyle.cend()) ; // 正确：可以将 const char* 转换为 string 
-    list<string> slist1(1) ; // 1 个元素 ， 为空 string 
-    slist1.assign(10 , "Hiya!") ; // 10 个元素，每个都是 "Hiya!"
-    ```
+        ```C++
+        list<string> names ; 
+        vector<const char* > oldstyle ; 
+        names = oldstyle ; // 错误 ， 容器类型不匹配
+        names.assign(oldstyle.cbegin() , oldstyle.cend()) ; // 正确：可以将 const char* 转换为 string 
+        list<string> slist1(1) ; // 1 个元素 ， 为空 string 
+        slist1.assign(10 , "Hiya!") ; // 10 个元素，每个都是 "Hiya!"
+        ```
     * 使用 swap : swap 操作交换两个相同类型容器的内容 ， 调用 swap 之后，两个容器中的元素将会交换 。 
-    ```C++
-    vector<string> svec1(10) ; // 10 个元素的 vector
-    vector<string> svec2(24) ; // 24 个元素的 vector 
-    swap(svec1 , svec2) ; // 调用 swap 后， svec1 将包含 24 个 string 元素 ,svec2 将包含 10 个 string 。
-    ```
+        ```C++
+        vector<string> svec1(10) ; // 10 个元素的 vector
+        vector<string> svec2(24) ; // 24 个元素的 vector 
+        swap(svec1 , svec2) ; // 调用 swap 后， svec1 将包含 24 个 string 元素 ,svec2 将包含 10 个 string 。
+        ```
     
     **除 array 外 ， swap 不对任何元素进行拷贝、删除或插入操作，因此可以保证在常数时间内完成 。**
-        1. 元素不会被移动的事实意味着，除 string 外，指向容器的迭代器、引用和指正在 swap 操作之后都不会失效，它们仍指向 swao 操作之前所指向的那些元素，但是在 swap 之后，这些元素已经属于不同的容器了。例如： 假定 iter 和 swap 之前指向 svec1[3] 的 string ,那么在 swap 之后它指向 svec2[3] 的元素。  
-        2. 与其他容器不同，对一个 string 调用 swap 会导致迭代器、引用和指针失效。
-        3. 与其他容器不同，swap 两个 array 会真正交换它们的元素，因此，交换两个 array 所需的时间与 array 中元素的数目成正比。
+    ```
+    1. 元素不会被移动的事实意味着，除 string 外，指向容器的迭代器、引用和指正在 swap 操作之后都不会失效，它们仍指向 swao 操作之前所指向的那些元素，但是在 swap 之后，这些元素已经属于不同的容器了。例如： 假定 iter 和 swap 之前指向 svec1[3] 的 string ,那么在 swap 之后它指向 svec2[3] 的元素。  
+    2. 与其他容器不同，对一个 string 调用 swap 会导致迭代器、引用和指针失效。
+    3. 与其他容器不同，swap 两个 array 会真正交换它们的元素，因此，交换两个 array 所需的时间与 array 中元素的数目成正比。
+    ```
 
 * **顺序容器操作 ：**
 	* 使用 push_back : container 的类型可以是 list 、 vector 、string 或 deque 
-	```C++
-    string word  ;
-    while(cin >> word )
-    	container.push_back(word) ; 
-    ```
+        ```C++
+        string word  ;
+        while(cin >> word )
+            container.push_back(word) ; 
+        ```
     * 使用 push_front : list 、forward_list 和 deque 容器还支持名为 push_front 的类似操作，此操作将元素插入到容器头部 ：
-    ```C++
-    list<int> ilist ; 
-    for (size_t ix = 0 ; ix != 4 ; ++ix ){
-    	ilist.push_front(ix) ;
-    }
-    最终 ilist 保存序列为 3、2、1、0 。
-    ```
+        ```C++
+        list<int> ilist ; 
+        for (size_t ix = 0 ; ix != 4 ; ++ix ){
+            ilist.push_front(ix) ;
+        }
+        最终 ilist 保存序列为 3、2、1、0 。
+        ```
     * 在容器中的特定位置添加元素： insert 成员提供了更一般的添加功能，它允许我们在容器中任意位置插入 0 个或多个元素。 vector 、deque、list 和 string 都支持 insert 成员，forward_list 提供了特殊版本的 insert 成员 。
-    ```C++
-    vector<string> svec ; 
-    list<string> slist ; 
-    //等价于调用 slist.push_front("Hello!") ; 
-    slist.insert(slist.begin() , "Hello!") ; 
-    
-    // vector 不支持 push_front ,但我们可以插入到 begin() 之前，不过插入到 vector 末尾之外的任何位置都可能很慢。
-    svec.insert(svec.begin() , "Hello!") ; 
-    
-    svec.insert(svec.begin() , 10 , "Anna") ; // 将 10 个元素插入到 svec 的末尾，并将所有元素都初始化为 string "Anna" ; 
-    
-    vector<string> v = {"quasi" , "simba" , "frollo" , "scar"} ; 
-    slist.insert(slist.begin() , v.end() - 2 , v.end() ) ; // 将 v 的最后两个元素添加到 slist 的开始位置 。
-    slist.insert(slist.end() , {"these" , "words" , "will" , "go" , "at" , "the" , "end"}) ;
-    slist.insert(slist.begin() , slist.begin() , slist.end()) ; // 运行错误，迭代器表示要拷贝的范围，不能指向与目的位置相同的容器 。
-    
-    通过使用 insert 的返回值,返回新添加的元素的迭代器，可以在容器中一个特定位置反复插入元素 。 
-    list<string> lst ; 
-    auto iter = lst.begin() ; 
-    while(cin >> word)
-    	iter = lst.insert(iter , word) ; // 等价于调用 push_front 
-    ```
+        ```C++
+        vector<string> svec ; 
+        list<string> slist ; 
+        //等价于调用 slist.push_front("Hello!") ; 
+        slist.insert(slist.begin() , "Hello!") ; 
+        
+        // vector 不支持 push_front ,但我们可以插入到 begin() 之前，不过插入到 vector 末尾之外的任何位置都可能很慢。
+        svec.insert(svec.begin() , "Hello!") ; 
+        
+        svec.insert(svec.begin() , 10 , "Anna") ; // 将 10 个元素插入到 svec 的末尾，并将所有元素都初始化为 string "Anna" ; 
+        
+        vector<string> v = {"quasi" , "simba" , "frollo" , "scar"} ; 
+        slist.insert(slist.begin() , v.end() - 2 , v.end() ) ; // 将 v 的最后两个元素添加到 slist 的开始位置 。
+        slist.insert(slist.end() , {"these" , "words" , "will" , "go" , "at" , "the" , "end"}) ;
+        slist.insert(slist.begin() , slist.begin() , slist.end()) ; // 运行错误，迭代器表示要拷贝的范围，不能指向与目的位置相同的容器 。
+        
+        通过使用 insert 的返回值,返回新添加的元素的迭代器，可以在容器中一个特定位置反复插入元素 。 
+        list<string> lst ; 
+        auto iter = lst.begin() ; 
+        while(cin >> word)
+            iter = lst.insert(iter , word) ; // 等价于调用 push_front 
+        ```
     * 使用 emplace 操作 ：新标准引入了三个新成员---- emplace_front 、emplace 和 emplace_back ， 这些操作构造而不是拷贝元素，这些操作分别对应 push_front 、insert 和 push_back  。 当调用 push 或 insert 成员函数时，我们将元素类型的对象传递给它们，这些对象被拷贝到容器中，而当我们调用一个 emplace 成员函数时，则是将参数传递给元素类型的构造函数。
-    ```C++
-    c.emplace_back("978-0590353403" , 25 , 15.99) ; // 在 c 的末尾构造一个 Sales_data 对象 ， 使用三个参数的 Sales_data 构造函数 。 
-    c.push_back("978-0590353403" , 25 , 15.99) ; // 错误，没有接受三个参数的 push_back 版本 。
-    c.push_back(Sales_data("978-0590353403" , 25 , 15.99)) ; //正确，创建一个临时的 Sales_data 对象传递给 push_back 。
-    在调用 emplace_back 时，会在容器管理的内存空间中直接创建对象，而调用 push_back 则会创建一个局部临时对象，并将其压入容器中。
-    // iter 指向 c 中一个元素，其中保存了 Sales_data 元素
-    c.emplace_back() ; // 使用 Sales_data 的默认构造函数
-    c.emplace(iter , "999-99999999") ; // 使用 Sales_data(string)
-    c.emplace_front("987-0590353403" , 25 , 15.99) ; // 使用 Sales_data 的接受一个 ISBN 、一个 count 和一个 price 的构造函数。
-    ```
+        ```C++
+        c.emplace_back("978-0590353403" , 25 , 15.99) ; // 在 c 的末尾构造一个 Sales_data 对象 ， 使用三个参数的 Sales_data 构造函数 。 
+        c.push_back("978-0590353403" , 25 , 15.99) ; // 错误，没有接受三个参数的 push_back 版本 。
+        c.push_back(Sales_data("978-0590353403" , 25 , 15.99)) ; //正确，创建一个临时的 Sales_data 对象传递给 push_back 。
+        在调用 emplace_back 时，会在容器管理的内存空间中直接创建对象，而调用 push_back 则会创建一个局部临时对象，并将其压入容器中。
+        // iter 指向 c 中一个元素，其中保存了 Sales_data 元素
+        c.emplace_back() ; // 使用 Sales_data 的默认构造函数
+        c.emplace(iter , "999-99999999") ; // 使用 Sales_data(string)
+        c.emplace_front("987-0590353403" , 25 , 15.99) ; // 使用 Sales_data 的接受一个 ISBN 、一个 count 和一个 price 的构造函数。
+        ```
 * **访问元素 ：**
     ```C++
     at 和下标操作只适用于 string 、 vector 、deque 和 array 。
     back 不适用于 forward_list 。
+       
         1. c.back() 返回 c 中尾元素的引用。若 c 为空，函数行为未定义 。
         2. c.front() 返回 c 中首元素的引用。若 c 为空，函数行为未定义 。
         3. c[n] 返回 c 中下标为 n 的元素的引用， n 是一个无符号整数 。 若 n >= c.size() , 则函数行为未定义 。 
@@ -892,6 +901,7 @@ C++ 语言不直接处理输入输出，而是通过一族定义在标准库中�
     forward_list 有特殊版本的 erase .
     forward_list 不支持 pop_back ; 
     vector 和 string 不支持 pop_front . 
+        
         1. c.pop_back()  删除 c 中尾元素。若 c 为空，则函数行为未定义，函数返回 void 。
         2. c.pop_front() 删除 c 中首元素。若 c 为空，则函数行为未定义，函数返回 void。
         3. c.erase(p)    删除迭代器 p 所指定的元素，返回一个指向被删除元素之后元素的迭代器，若 p 指向尾元素，则返回尾后（off-the-end）迭代器。若 p 是尾后迭代器，则函数行为未定义。
@@ -900,18 +910,18 @@ C++ 语言不直接处理输入输出，而是通过一族定义在标准库中�
     ```
 * **在 forward_list 中插入或删除元素的操作 ：**
     ```C++
-        1.lst.before_begin() 、lst.cbefore_begin() : 返回指向链表首元素之前不存在的元素迭代器，此迭代器不能解引用， cbefore_bgin() 返回一个 const_iterator 。
-        2.lst.insert_after(p , t) 、lst.insert_after(p , n ,  t)、lst.insert_after(p ，b , e)、lst.insert_after(p , il) ： 在迭代器 p 之后的位置插入元素 。t 是一个对象， n 是数量 ，b 和 e 是表示范围的一对迭代器（b 和 e 不能指向 lst 内）。 il 是一个花括号列表，返回一个指向最后一个插入元素的迭代器，如果范围为空，则返回 p 。 若 p 为尾后迭代器，则函数未定义 。
-        3. emplace_after(p , args) 使用 args 在 p 指定的位置之后创建一个元素，返回一个指向这个新元素的迭代器，若 p 是尾后迭代器，则函数行为未定义。
-        4. lst.erase_after(p)、lst.erase_after(b ,e) : 删除 p 指向的位置之后的元素，或删除从 b 之后直到（但不包含）e 之间的元素，返回一个指向被删除元素之后元素的迭代器，若不存在这样的元素，则返回尾后迭代器。如果 p 指向 lst 的尾元素或者是一个尾后迭代器，则函数行为未定义 。 
+    1.lst.before_begin() 、lst.cbefore_begin() : 返回指向链表首元素之前不存在的元素迭代器，此迭代器不能解引用， cbefore_bgin() 返回一个 const_iterator 。
+    2.lst.insert_after(p , t) 、lst.insert_after(p , n ,  t)、lst.insert_after(p ，b , e)、lst.insert_after(p , il) ： 在迭代器 p 之后的位置插入元素 。t 是一个对象， n 是数量 ，b 和 e 是表示范围的一对迭代器（b 和 e 不能指向 lst 内）。 il 是一个花括号列表，返回一个指向最后一个插入元素的迭代器，如果范围为空，则返回 p 。 若 p 为尾后迭代器，则函数未定义 。
+    3. emplace_after(p , args) 使用 args 在 p 指定的位置之后创建一个元素，返回一个指向这个新元素的迭代器，若 p 是尾后迭代器，则函数行为未定义。
+    4. lst.erase_after(p)、lst.erase_after(b ,e) : 删除 p 指向的位置之后的元素，或删除从 b 之后直到（但不包含）e 之间的元素，返回一个指向被删除元素之后元素的迭代器，若不存在这样的元素，则返回尾后迭代器。如果 p 指向 lst 的尾元素或者是一个尾后迭代器，则函数行为未定义 。 
     ```
 * ** 容器大小管理操作 **
     ```C++
-        1. shrink_to_fit 只适用于 vector 、string 和 deque 。
-        2. capacity 和 reserve 只适用于 vector 和 string 。
-        3. c.shrink_to_fit() 请将 capacity() 减少为与 size() 相同大小 。  
-        4. c.capacity() 不重新分配内存空间的话， c 可以保存多少元素。
-        5. c.reserve(n) 分配至少能容纳 n 个元素的内容空间 。
+    1. shrink_to_fit 只适用于 vector 、string 和 deque 。
+    2. capacity 和 reserve 只适用于 vector 和 string 。
+    3. c.shrink_to_fit() 请将 capacity() 减少为与 size() 相同大小 。  
+    4. c.capacity() 不重新分配内存空间的话， c 可以保存多少元素。
+    5. c.reserve(n) 分配至少能容纳 n 个元素的内容空间 。
     ```
 	* 容器 size 是指它已经保存的元素的数目，而 capacity 则是在不分配新的内存空间的前提下它最多可以保存多少元素 。 
         ```C++
@@ -991,7 +1001,7 @@ C++ 语言不直接处理输入输出，而是通过一族定义在标准库中�
     ```
 * **string 和 数值之间的转换：** 
     ```C++
-        1. to_string(val) : 一组重载函数，返回数值 val 的 string 表示。val 可以是任何算数类型，没每个浮点类型和 int 或更大的整形 ， 都应相应版本的 to_string ,与往常一样，小整型会被提升。 
-        2. stoi(s , p , b ) 、stol(s , p , b) 、stoul(s , p , b) 、stoll(s , p , b) 、stoull(s , p , b) ：返回 s 的起始子串的数值，返回值类型分别是 int 、long 、unsigned long 、long long 、unsigned long long 。 b 表示转换所有的基数 ，默认值为 10 ， p 是 size_t 指针， 用来保存 s 中第一个非数值字符的下标 , p 默认为 0 ，即 ， 函数不保存下标 。 
-        3. stof(s , p) 、stod(s , p) 、stold(s ,p) 返回 s 的起始子串（表示浮点数内容）的数值，返回值类型分别是 float、double 、 或 long double , 参数 p 的作用与整数转换函数中一样 。
+    1. to_string(val) : 一组重载函数，返回数值 val 的 string 表示。val 可以是任何算数类型，没每个浮点类型和 int 或更大的整形 ， 都应相应版本的 to_string ,与往常一样，小整型会被提升。 
+    2. stoi(s , p , b ) 、stol(s , p , b) 、stoul(s , p , b) 、stoll(s , p , b) 、stoull(s , p , b) ：返回 s 的起始子串的数值，返回值类型分别是 int 、long 、unsigned long 、long long 、unsigned long long 。 b 表示转换所有的基数 ，默认值为 10 ， p 是 size_t 指针， 用来保存 s 中第一个非数值字符的下标 , p 默认为 0 ，即 ， 函数不保存下标 。 
+    3. stof(s , p) 、stod(s , p) 、stold(s ,p) 返回 s 的起始子串（表示浮点数内容）的数值，返回值类型分别是 float、double 、 或 long double , 参数 p 的作用与整数转换函数中一样 。
     ```
