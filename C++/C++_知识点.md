@@ -960,7 +960,7 @@ C++ 语言不直接处理输入输出，而是通过一族定义在标准库中�
     4. s.append(args) : 将 args 追加到 s , 返回一个指向 s 的引用 。 
     5. s.replace(range , args ) : 删除 s 中范围 range 内的字符 ， 替换为 args 指定的字符 ， range 或者是一个下标和一个长度，或者是一对指向 s 的迭代器 ， 返回一个指向 s 的引用 。
     ```
-* **修改 string 的操作 ：**  ： 每个搜索操作都返回一个 string::size_type 值，表示匹配发送位置的下标，如果搜索失败，则返回一个名为 string::npos 的 static 成员 。 标准库将 npos 定义为一个 const string::size_type 类型 ， 并初始化为值 -1 ； 
+* **string 搜索操作 ：**  ： 每个搜索操作都返回一个 string::size_type 值，表示匹配发送位置的下标，如果搜索失败，则返回一个名为 string::npos 的 static 成员 。 标准库将 npos 定义为一个 const string::size_type 类型 ， 并初始化为值 -1 ； 
     ```C++
 	1. s.find(args) : 查找 s 中 args 第一次出现的位置 
 	2. s.rfind(args) : 查找 s 中 args 最后一次出现的位置 
@@ -1005,3 +1005,205 @@ C++ 语言不直接处理输入输出，而是通过一族定义在标准库中�
     2. stoi(s , p , b ) 、stol(s , p , b) 、stoul(s , p , b) 、stoll(s , p , b) 、stoull(s , p , b) ：返回 s 的起始子串的数值，返回值类型分别是 int 、long 、unsigned long 、long long 、unsigned long long 。 b 表示转换所有的基数 ，默认值为 10 ， p 是 size_t 指针， 用来保存 s 中第一个非数值字符的下标 , p 默认为 0 ，即 ， 函数不保存下标 。 
     3. stof(s , p) 、stod(s , p) 、stold(s ,p) 返回 s 的起始子串（表示浮点数内容）的数值，返回值类型分别是 float、double 、 或 long double , 参数 p 的作用与整数转换函数中一样 。
     ```
+
+### 第十章：泛型算法
+
+标准库并未给每个容器都定义成员函数来实现：查找特定元素、替换或删除一个特定值、重排元素顺序等，而是定义了一组**泛型算法**，可以用于不同类型的元素和多种容器类型，因为只是通过迭代器来访问元素，就可以不依赖容器类型 。
+
+* **find 算法** : 传递给 find 的前两个参数是表示元素范围的迭代值 ， 第三个参数是一个值 。
+    ```C++
+    // int 的 vector : vec
+    int val = 42 ; // 我们将查找的值
+    // 如果在 vec 中找到想要的元素，则返回结果指向它，否则返回结果为 vec.cend() ;
+    auto result = find(vec.cbegin() , vec.cend() , val) ; 
+    // 报告结果
+    cout << "The value " << val << (result == vec.cend() ? " is not present" : " is present " ) << endl  ;
+  
+    // string 的 list : lst
+    string val = "a value " ; // 我们要找的值
+    auto result = find(lst.cbegin() , lst.ceng() , val) ; 
+
+    // 数组
+    int ai[] = {27,210,12,47,109,83} ; 
+    int val = 83 ; 
+    int *result = find(begin(ia) , end(ia) , val) ; 
+    // 在从 ia[1] 开始，直至（但不包含）ia[4] 的范围内查找元素
+    auto  result = find(ia + 1 , ia + 4 , val) ; 
+    ```
+* **只读算法** ： 读取其输入范围内的元素，而从不改变元素 。 
+    * accumulate 函数： 接受三个参数 ， 前两个指出了需要求的和元素的范围 ， 第三个参数是和的初值 , 同时决定了函数中使用哪个加法运算符以及返回值的类型 。 
+        ```C++
+        // 对 vec 中的元素求和， 和的初值是 0 
+        int sum = accumulate(vec.cbegin() , vec.cend() , 0 )  ; 
+        // 将 vector 中所有的 string 连接起来 。
+        string sum = accumulate(v.cbegin() , v.cend() , string("")) ; 
+        // 错误 ， const char* 没有定义 + 运算符
+        string sum = accumulate(v.cbegin() , v.cend() , "") ;  
+        ````
+    * equal 函数：将第一个序列中的每个元素与第二个序列中的对应元素进行比较 ， 前两个参数表示第一个序列中的元素范围， 第三个表示第二个序列的首元素；
+        ```C++
+        // roster1 可以是 vector<string> , 而 roster2 是 list<const char*> , roster2 中的元素数目至少与 roster1 一样多 。 
+        equal(roster1.cbegin() , roster1.cend() , roster2.cbegin() ) ; 
+        ```
+
+* **写容器元素的算法** 
+    * fill 算法：接受一对迭代器表示一个范围， 还接受一个值作为第三个参数 ， fill 将给定的这个值赋予序列中的每一个函数 。 
+        ```C++
+        fill(vec.begin() , vec.end() , 0 ) ; // 将每个元素重置为 0 
+        fill(vec.begin() , vec.begin() + vec.size() / 2 , 10 ) ; // 将容器的一个子序列设置为 10 ； 
+        ```
+    * fill_n 函数：接受一个单迭代器、一个计数值和一个值 。 
+        ```C++
+        vector<int> vec ; // 空 vector 
+        fill_n(vec.begin() , vec.size() , 0 ) ; // 将所有元素重置为 0 
+        fill_n(dest , n , val) ; //假定 dest 指向一个元素 ，而从 dest 开始的序列至少包含 n 个元素 。
+
+        vector<int> vec ; // 空向量
+        // 灾难：修改 vec 中的 10 个（不存在）元素
+        fill_n<vec.begin() , 10 ,0 ) ;
+        ```
+    * back_inserter 函数：接受一个指向容器的引用， 返回一个与该容器绑定的插入迭代器，当我们通过此迭代器赋值时，赋值运算符会调用 push_back 将一个具有给定值的元素添加到容器中。(感觉直接用 push_back 添加不快乐吗？)
+        ```C++
+        vector<int> vec ; // 空向量
+        auto it = back_inserter(vec) ; // 通过它赋值会将元素添加到 vec 中
+        *it = 42 ; // vec 中现在有一个元素，值为 42 
+        
+        fill_n(back_inserter(vec) , 10 , 0) ; // 添加 10 个元素到 vec ,成功
+        ```
+    * copy 算法: 另一个向目的位置迭代器指向的输出序列中的元素写入数据的算法 。 
+        ```C++
+        int al[] = {0,1,2,3,4,5,6,7,8,9} ; 
+        int a2[sizeof(al) / sizeof(*al)] ; // a2 与 a1 大小一样 
+        // ret 指向拷贝到 a2 的尾元素之后的位置 
+        auto ret = copy(begin(a1) , end(a1) , a2) ; // 把 a1 的内容拷贝给 a2
+        ```
+    * replace 算法：
+        ```C++
+        // 将所有值为 0 的元素改为 42
+        replace(ilst.begin() , ilst.end() , 0 , 42) ; 
+        
+        // 使用 back_inserter 按需要增长目标序列 , ilst 为改变， ivec 包含 ilst 的一份拷贝 ， 不过原来在 ilst 中的值为 0 的元素在 ivec 中都变为 42 。
+        replace(ilst.cbegin() , ilst.cend() , back_inserter(ivec) , 0 , 42) ; 
+        ```
+    * **消除重复单词**
+        ```C++
+            // 按字典序排序 words ，以便查找重复单词
+            sort(words.begin() , words.end()) ; 
+            // unique 重排输入范围，使得每个单词只出现一次，排列在范围的前部， 返回指向不重复区域之后一个位置的迭代器 。
+            auto end_unique = unique(words.begin() , words.end()) ; 
+            // 使用向量操作 erase 删除重复单词
+            words.erase(end_unique , words.end()) ;
+        ```
+
+* **lambda 表达式**: 表示另一个可调用的代码单元，我么可以将其理解为一个未命名的内联函数，与任何函数类似，一个 lambda 具有一个返回类型、一个参数列表和一个函数体 。
+    * 介绍 lambda 
+        ```C++
+            一个 lambda 表达式具有如下形式：
+            [capture list] (parameter list) -> return type { function body} ; 
+            capture list(捕获列表)是一个 lambda 所在函数中定义的局部变量的列表（通常为空），return type 、parameter list 和 function body 与任何普通函数一样 ， 分别表示返回类型、参数列表和函数体。
+
+            // 空捕获列表表明此 lambda 不使用它所在函数中的任何局部变量 。 
+            auto f = [] { return 42 ; } ; 
+            cout<< f() << endl  ; // 打印 42 
+
+            // 按长度排序 ， 长度相同的单词维持字典序 
+            stable_sort(words.begin() , words.end() , [](const string &a , const string &b) { return a.size() < b.size() ; } ) ; 
+
+            一个 lambda 只有在其捕获列表中捕获一个它所在函数中的局部变量，才能在函数体中使用该变量 。
+            // 错误 ： sz 未捕获
+            [](const string &a) { return a.size() >= sz ;} ;
+            // 正确
+            [sz](const string &a) { return a.size() >= sz ;} ;
+            
+            // 查找第一个长度大于等于 sz 的元素
+            auto wc = find_if(words.begin() , words.end() , [sz](const string &a){ return a.size() >= sz ; } ) ;
+
+            // 打印长度大于等于给定值的单词，每个单词后面接一个空格
+            for_each(wc , words.end() , [](const string &s) { cout << s << " " ;} ) ; 
+            cout << endl ; 
+            /*
+            捕获列表为空 ， 是因为我们只对 lambda 所在函数中定义的（非 static）变量使用捕获列表 ， 一个 lambda 可以直接使用定义在当前函数体之外的名字，在本例中，cout 不是定义在 biggies 中的局部名字，而是定义在投文件 iostream 中 ， 因此，只要在 biggies 出现的作用域包含了头文件 iostream ,我们的 lambda 就可以使用 cout 。
+            */
+        ```
+    * lambda 捕获和返回
+        ```
+            lambda 捕获列表
+            1. [] ： 空捕获列表，lambda 不能使用所在函数中的变量 , 一个 lambda 只有捕获变量后才能使用它们 。
+            2. [names] : names 是一个逗号分隔的名字列表，这些名字都是 lambda 所在函数的局部变量。默认情况下 ，捕获列表中的变量都被拷贝，名字前如果使用了 & , 则采用引用捕获方式 。
+            3. [&] : 隐式捕获列表 ， 采用引用捕获方式，lambda 体中所使用的来自所在函数的实体都采用引用方式使用。
+            4. [=] : 隐式捕获列表 ， 采用值捕获方式，lambda 体将拷贝所使用的来自所在函数的实体的值。
+            5. [& , identifier_list] : identifier_list 是一个逗号分隔的列表，包含 0 个或多个来自所在函数的变量，这些变量采用值捕获方式，而任何隐式捕获的变量都采用引用方式捕获，identifier_list 中的名字前面不能使用 & 。
+            6. [= , identifier_list] : identifier_list 中的变量都采用引用方式捕获，而任何隐式捕获的变量都采用值方式捕获，identifier_list 中的名字不能包括 this , 且这些名字之前必须使用 & 。
+        ```
+        样例：
+        ```C++
+            void fcn1()
+            {
+                size_t v1 = 42 ;// 局部变量
+                auto f = [v1] { return v1 ; } ; // 将 v1 拷贝到名为 f 的可调用对象 .
+                v1 = 0 ; 
+                auto j = f() ; // j 为 42 ， f 保存了我们创建它时 v1 的拷贝
+            }
+
+            void fcn2() 
+            {
+                size_t = v1 = 42 ; // 局部变量
+                auto f2 = [&v1] { return v1 ;} ;
+                v1 = 0 ; 
+                auto j = f2() ; // j 为 0 ；f2 保存 v1 的引用，而非拷贝.
+            }
+
+            // 我们不能拷贝 ostream 对象，因此捕获 os 的唯一方法就是捕获其引用
+            void biggies(vector<string> &words , vector<string> :: size_type sz , ostream &os = cout , char c = ' ') {
+                for_each(words.begin() , words.end() , [&os , c](const string &s){ os << s << c ; } ) ; 
+            }
+
+            // sz 为隐式捕获，值捕获方式
+            wc = find_if(words.begin() , words.end() , [=] (const string &s) {
+                return s.size() >= sz ;   
+            }) ; 
+
+            // 混合使用隐式捕获和显示捕获
+            void biggiest(vector<string> &words , vector<string>::size_type sz , ostream &os = cout , char c = ' ')
+            {
+                // os 隐式捕获，引用捕获方式； c 显式捕获，值捕获方式
+                for_each(words.begin() , words.end() , [& , c] (const string &s) { os << s << c ;}) ; 
+                // os 显式捕获，引用捕获方式； c 隐式捕获，值捕获方式
+                for_each(words.begin() , words.end() , [= , &os] (const string &s) { os << s << c ;}) ;
+            }
+        ```
+    * 指定 lambda 返回类型
+        ```C++
+            // 正确：我们无须指定返回类型，因为可以根据条件运算符的类型推断出来
+            transform(vi.begin() , vi.end() , vi.begin() , [](int i) {
+                return i < 0 ? -i : i ; 
+            }) ; 
+
+            //错误：不能推断 lambda 的返回类型
+            transform(vi.begin() , vi.end() , vi.begin() , [](int i) {
+                if( i < 0) return -i ; else return i ; 
+            }) ;
+
+            // 正确：使用尾置返回类型
+            transform(vi.begin() , vi.end() , vi.begin() , [](int i) -> int {
+                if( i < 0) return -i ; else return i ; 
+            }) ;
+        ```
+* **标准库 bind 函数**: 一般形式为 auto newCallable = bind (callable , arg_list) ; 其中 newCallable 本身是一个可调用对象， arg_list 是一个逗号分隔的参数列表，对应给定的 callable 参数。即，当我们调用 newCallable 时，newCallable 会调用 callable ,并传递给它 arg_list 中的参数 。arg_list 中的参数可能包含形如 _n 的名字，其中 n 是一个整数，这些参数是“占位符” , 表示 newCallable 的参数，它们占据了传递给 newCallable 的参数的“位置” 。
+    ```C++
+    bool check_size(const string &s , string::size_type sz){
+        return s.size() >= sz ; 
+    }
+
+    // check6 是一个可调用对象 ， 接受一个 string 类型的参数，并用此 string 和值 6 来调用 check_size ; 
+    auto check6 = bind(check_size , _1 , 6) ; 
+    
+    string s = "hello" ; 
+    bool b1 = check6(s) ; // check6(s) 会调用 check_size(s , 6) 
+    auto wc = find_if(words.begin() , words.end() , bind(check_size , _1 , sz) ) ;
+
+    _1 对应的 using 声明为：
+    using std:: placeholders :: _1 ; 
+    ```
+
+* **再探迭代器**: 感觉跟之前学的差不多了，就跳过了。
