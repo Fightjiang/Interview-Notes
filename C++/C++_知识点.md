@@ -1207,3 +1207,66 @@ C++ 语言不直接处理输入输出，而是通过一族定义在标准库中�
     ```
 
 * **再探迭代器**: 感觉跟之前学的差不多了，就跳过了。
+
+
+### 第十一章：关联容器
+
+关联容器和顺序容器有着根本的不同：关联容器中的元素是按照关键字来保存和访问的，与之相对，顺序容器中的元素是按照它们在容器中的位置来顺序保存和访问的。
+```
+按关键字有序保存元素：
+
+1. map 关联数组：保存关键字--值对
+2. set 关键字即值，即只保存关键字的容器
+3. multimap 关键字可重复出现的 map
+4. multiset 关键字可重复出现的 set 
+
+无序集合：
+
+1. unordered_map 用哈希函数组织的 map
+2. unordered_set 用哈希函数组织的 set 
+3. unordered_multimap 哈希组织的 map ; 关键字可以重复出现
+4. unordered_multiset 哈希组织的 set ; 关键字可以重复出现
+```
+
+* **检测 insert 的返回值** ：insert 返回的值是一个 pair ，pair 的 first 成员是一个迭代器，指向具有给定关键字的元素；second 成员是一个 bool 值， 关键字已在容器中值为 false , 否则值为 true ; 
+
+```C++
+// 统计每个单词在输入中出现次数的一种更繁琐的方法
+map<string , size_t> word_cout ; // 从 string 到 size_t 的空 map 
+string word ; 
+
+while (cin >> word) {
+    // 插入一个元素 ， 关键字等于 word ，值为 1 ；
+    // 若 word 已在 word_count 中 ， insert 什么也不做
+    auto ret = word_count.insert({word , 1}) ; 
+    if(!ret.second)            // word 已在 word_count 中
+        ++ret.first->second ; // 递增计数器
+}
+
+展开递增计数器 ： ++（（ret.first）->second） ; // 等价的表达式 
+解释此表达式 ： 
+ret : 保存 insert 返回的值 ， 是一个 pair 。
+ret.first : 是 pair 的第一个成员 ， 是一个 map 迭代器， 指向具有给定关键字的元素 。
+ret.first-> ： 解引用此迭代器， 提取 map 中的元素 ， 元素也是一个 pair 。
+ret.first->second : map 中元素的值部分。
+++ret.first->second : 递增此值
+```
+* **删除元素** ：erase , 删除所有匹配给定关键字的元素，返回实际删除的元素的数量 。
+* **访问元素** ：
+```C++
+set<int> iset = {0,1,2,3,4,5,7,8,9} ; 
+iset.find(1) ; // 返回一个迭代器， 指向 key == 1 的元素 。
+iset.find(11) ; // 返回一个迭代器， 其值等于 iset.end() 。
+iset.count(1) ; // 返回 1 
+iset.count(11) ; // 返回 0 
+```
+* **在一个关联容器中查找元素的操作** ：
+```
+lower_bound 和 upper_bound 不适用于无序容器。 下标和 at 操作只适用于非 const 的 map 和 unordered_map 。
+c.find(k) : 返回一个迭代器 ， 指向第一个关键字为 k 的元素，若 k 不在容器中，则返回尾后迭代器 。 
+c.count(k) : 返回关键字等于 k 的元素的数量。对于不允许重复关键字的容器，返回值用于是 0 或 1
+c.lower_bound(k) : 返回一个迭代器，指向第一个关键字不小于 k 的元素 
+c.lower_bound(k) : 返回一个迭代器，指向第一个关键字不大于 k 的元素
+c.equal_range(K) : 返回一个迭代器，表示关键字等于 k 的元素的范围 ， 若 k 不存在，pair 的两个成员均等于 c.end() 。
+``` 
+* **无序容器**： 无序容器在存储上组织为一组桶，每个桶保存零个或多个元素，无序容器使用一个哈希函数将元素映射到桶，为了访问一个元素，容器首先计算元素的哈希值，它指出应该搜索那个桶。容器将具有一个特定哈希值的所有元素都保存在相同的桶中。如果容器允许重复关键字，所有具有相同关键字的元素也都会在同一个桶中。因此，无序容器的性能依赖于哈希函数的质量和桶的数量和大小。
