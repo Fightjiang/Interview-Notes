@@ -1212,61 +1212,136 @@ C++ 语言不直接处理输入输出，而是通过一族定义在标准库中�
 ### 第十一章：关联容器
 
 关联容器和顺序容器有着根本的不同：关联容器中的元素是按照关键字来保存和访问的，与之相对，顺序容器中的元素是按照它们在容器中的位置来顺序保存和访问的。
-```
-按关键字有序保存元素：
+    ```
+    按关键字有序保存元素：
 
-1. map 关联数组：保存关键字--值对
-2. set 关键字即值，即只保存关键字的容器
-3. multimap 关键字可重复出现的 map
-4. multiset 关键字可重复出现的 set 
+    1. map 关联数组：保存关键字--值对
+    2. set 关键字即值，即只保存关键字的容器
+    3. multimap 关键字可重复出现的 map
+    4. multiset 关键字可重复出现的 set 
 
-无序集合：
+    无序集合：
 
-1. unordered_map 用哈希函数组织的 map
-2. unordered_set 用哈希函数组织的 set 
-3. unordered_multimap 哈希组织的 map ; 关键字可以重复出现
-4. unordered_multiset 哈希组织的 set ; 关键字可以重复出现
-```
+    1. unordered_map 用哈希函数组织的 map
+    2. unordered_set 用哈希函数组织的 set 
+    3. unordered_multimap 哈希组织的 map ; 关键字可以重复出现
+    4. unordered_multiset 哈希组织的 set ; 关键字可以重复出现
+    ```
 
 * **检测 insert 的返回值** ：insert 返回的值是一个 pair ，pair 的 first 成员是一个迭代器，指向具有给定关键字的元素；second 成员是一个 bool 值， 关键字已在容器中值为 false , 否则值为 true ; 
 
-```C++
-// 统计每个单词在输入中出现次数的一种更繁琐的方法
-map<string , size_t> word_cout ; // 从 string 到 size_t 的空 map 
-string word ; 
+    ```C++
+    // 统计每个单词在输入中出现次数的一种更繁琐的方法
+    map<string , size_t> word_cout ; // 从 string 到 size_t 的空 map 
+    string word ; 
 
-while (cin >> word) {
-    // 插入一个元素 ， 关键字等于 word ，值为 1 ；
-    // 若 word 已在 word_count 中 ， insert 什么也不做
-    auto ret = word_count.insert({word , 1}) ; 
-    if(!ret.second)            // word 已在 word_count 中
-        ++ret.first->second ; // 递增计数器
-}
+    while (cin >> word) {
+        // 插入一个元素 ， 关键字等于 word ，值为 1 ；
+        // 若 word 已在 word_count 中 ， insert 什么也不做
+        auto ret = word_count.insert({word , 1}) ; 
+        if(!ret.second)            // word 已在 word_count 中
+            ++ret.first->second ; // 递增计数器
+    }
 
-展开递增计数器 ： ++（（ret.first）->second） ; // 等价的表达式 
-解释此表达式 ： 
-ret : 保存 insert 返回的值 ， 是一个 pair 。
-ret.first : 是 pair 的第一个成员 ， 是一个 map 迭代器， 指向具有给定关键字的元素 。
-ret.first-> ： 解引用此迭代器， 提取 map 中的元素 ， 元素也是一个 pair 。
-ret.first->second : map 中元素的值部分。
-++ret.first->second : 递增此值
-```
+    展开递增计数器 ： ++（（ret.first）->second） ; // 等价的表达式 
+    解释此表达式 ： 
+    ret : 保存 insert 返回的值 ， 是一个 pair 。
+    ret.first : 是 pair 的第一个成员 ， 是一个 map 迭代器， 指向具有给定关键字的元素 。
+    ret.first-> ： 解引用此迭代器， 提取 map 中的元素 ， 元素也是一个 pair 。
+    ret.first->second : map 中元素的值部分。
+    ++ret.first->second : 递增此值
+    ```
 * **删除元素** ：erase , 删除所有匹配给定关键字的元素，返回实际删除的元素的数量 。
 * **访问元素** ：
-```C++
-set<int> iset = {0,1,2,3,4,5,7,8,9} ; 
-iset.find(1) ; // 返回一个迭代器， 指向 key == 1 的元素 。
-iset.find(11) ; // 返回一个迭代器， 其值等于 iset.end() 。
-iset.count(1) ; // 返回 1 
-iset.count(11) ; // 返回 0 
-```
+    ```C++
+    set<int> iset = {0,1,2,3,4,5,7,8,9} ; 
+    iset.find(1) ; // 返回一个迭代器， 指向 key == 1 的元素 。
+    iset.find(11) ; // 返回一个迭代器， 其值等于 iset.end() 。
+    iset.count(1) ; // 返回 1 
+    iset.count(11) ; // 返回 0 
+    ```
 * **在一个关联容器中查找元素的操作** ：
-```
-lower_bound 和 upper_bound 不适用于无序容器。 下标和 at 操作只适用于非 const 的 map 和 unordered_map 。
-c.find(k) : 返回一个迭代器 ， 指向第一个关键字为 k 的元素，若 k 不在容器中，则返回尾后迭代器 。 
-c.count(k) : 返回关键字等于 k 的元素的数量。对于不允许重复关键字的容器，返回值用于是 0 或 1
-c.lower_bound(k) : 返回一个迭代器，指向第一个关键字不小于 k 的元素 
-c.lower_bound(k) : 返回一个迭代器，指向第一个关键字不大于 k 的元素
-c.equal_range(K) : 返回一个迭代器，表示关键字等于 k 的元素的范围 ， 若 k 不存在，pair 的两个成员均等于 c.end() 。
-``` 
+    ```
+    lower_bound 和 upper_bound 不适用于无序容器。 下标和 at 操作只适用于非 const 的 map 和 unordered_map 。
+    c.find(k) : 返回一个迭代器 ， 指向第一个关键字为 k 的元素，若 k 不在容器中，则返回尾后迭代器 。 
+    c.count(k) : 返回关键字等于 k 的元素的数量。对于不允许重复关键字的容器，返回值用于是 0 或 1
+    c.lower_bound(k) : 返回一个迭代器，指向第一个关键字不小于 k 的元素 
+    c.lower_bound(k) : 返回一个迭代器，指向第一个关键字不大于 k 的元素
+    c.equal_range(K) : 返回一个迭代器，表示关键字等于 k 的元素的范围 ， 若 k 不存在，pair 的两个成员均等于 c.end() 。
+    ``` 
 * **无序容器**： 无序容器在存储上组织为一组桶，每个桶保存零个或多个元素，无序容器使用一个哈希函数将元素映射到桶，为了访问一个元素，容器首先计算元素的哈希值，它指出应该搜索那个桶。容器将具有一个特定哈希值的所有元素都保存在相同的桶中。如果容器允许重复关键字，所有具有相同关键字的元素也都会在同一个桶中。因此，无序容器的性能依赖于哈希函数的质量和桶的数量和大小。
+
+
+### 第十二章：动态内存
+
+* **智能指针** ： 新的标准库提供了两种智能指针类型来管理动态对象，`shared_ptr` 允许多个指针指向同一个对象 ，`unique_ptr` 则 “独占” 所指向的对象 ， 标准库还定义了一个名为 `weak_ptr` 的伴随类，它是一种弱引用，指向 `shared_ptr` 所管理的对象，这三种类型都定义在 `memory` 头文件中。
+    ```
+    shared_ptr 和 unique_ptr 都支持的操作
+
+    1.shared_ptr<T> sp : 空智能指针，可以指向类型为 T 的对象
+    2.unique_ptr<T> up : 空智能指针，可以指向类型为 T 的对象
+    3.p                : 将 p 用作一个条件判断，若 p 指向一个对象，则为 true 
+    4.*p               : 解引用 p , 获得它指向的对象
+    5.p->mem           : 等价于 （*p).mem 
+    6.p.get()          : 返回 p 中保存的指针 ， 要小心使用，若智能指针释放了其对象，返回的指针所指向的对象也就消失了。
+    7.swap(p , q) 、 p.swap(q) : 交换 p 和 q 中的指针  
+
+
+    shared_ptr 独有的操作： 
+
+    1. make_shared<T>(args) : 返回一个 shared_ptr , 指向一个动态分配的类型为 T 的对象 ， 使用 args 初始化此对象。
+    2. shared_ptr<T>p(q)    : p 是 shared_ptr q 的拷贝 ， 此操作会递增 q 中的计数器， q 中的指针必须能转换为 T* .
+    3. p = q                : p 和 q 都是 shared_ptr , 所保存的指针必须能相互转换，此操作会递减 p 的引用计数 ， 递增 q 的引用计数 ， 若 p 的引用计数变为 0 ， 则将其管理的原内存释放 。
+    4. p.unique()           : 若 p.use_count() 为 1 ， 返回 true  , 否则返回 false .
+    5. p.use_count()        : 返回与 p 共享对象的智能指针数量 ， 可能很慢，主要用于调试 。
+    ```
+* **make_shared 函数** ： 最安全的分配和使用动态内存的方法是调用一个名为 make_shared 的标准库函数，此函数在动态内存中分配一个对象并初始化它，返回指向此对象的 shared_ptr 。
+    ```C++
+    shared_ptr<int> p3 = make_shared<int>(42) ; // 指向一个值为 42 的 int 的 shared_ptr 
+    shared_ptr<string> p4 = make_shared<string>(10 , '9') ; // p4 指向一个值为 “9999999999” 的 string 
+    shared_ptr<int> p5 = make_shared<int>() ; // p5 指向一个值初始化的 int , 即 ，值为 0 
+    ```
+
+* **计数器** ：我们可以认为每个 shared_ptr 都有一个关联的计数器，通常称其为`引用计数`。无论合适我们拷贝一个 shared_ptr , 计数器都会递增。当我们给 shared_ptr 赋予一个新值或是 shared_ptr 被销毁时，计数器就会递减。一旦一个 shared_ptr 的计数器变为 0 , 它就会自动释放自己所管理的对象。
+    ```C++
+    auto r = make_shared<int> (42) ; // r 指向的 int 只有一个饮用者
+    r = q ; // 给 r 赋值 ， 令它指向另一个地址， 递增 q 指向的对象的引用计数 ， 递减 r 原来指向的对象的引用计数 ， r 原来指向的对象已没有引用者 ， 会自动释放 。
+    ```
+
+* **使用 new 动态分配和初始化对象** ： 在自由空间分配的内存是无名的 ， 因此 new 无法为其分配的对象命名，而是返回一个指向该对象的指针 。
+    ```C++
+    int *pi = new int(1024) ; // pi 指向的对象的值为 1024 
+    string *ps = new string(10 , '9') ; // *ps 为 "9999999999"
+    vector<int> *pv = new vector<int>{0,1,2,3,4,5,6,7,8,9} ;// vector 有 10 个元素 ，值依次从 0 到 9 
+    ```
+
+* **指针值和 delete* : 我们传递给 delete 的指针必须指向动态分配的内存，或者是一个空指针。释放一块并非 new 分配的内存，或者将相同的指针值释放多次，其行为是未定义的。
+    ```C++
+    int i , *pi1 = &i , *pi2 = nullptr ; 
+    double *pd = new double(33) , *pd2 = pd ; 
+    delete i ; // 错误： i 不是一个指针
+    delete pi1 ; // 未定义： pi1 指向一个局部变量
+    delete pd ;  // 正确
+    delete pd2 ; // 未定义： pd2 指向的内存已经被释放了
+    delete pi2 ; // 正确：释放一个空指针总是没有错误的
+    
+    const int *pci = new const int(1024) ; 
+    delete pci ; // 正确：释放一个 const 对象
+    ```
+
+* **智能指针陷阱** ：为了正确使用智能指针 ， 我们必须坚持一些基本规范：
+    ```
+    1. 不使用相同的内置指针值初始化（或 reset）多个智能指针 。 
+    2. 不 delete get() 返回的指针
+    3. 不使用 get() 初始化或 reset 另一个智能指针。
+    4. 如果你使用 get() 返回的指针，记住当最后一个对应的智能指针销毁后，你的指针就变为无效了
+    5. 如果你使用智能指针管理的资源不是 new 分配的内存 ， 记住传递给它一个删除器 。 
+    ```
+
+* **[使用标准库：文本查询程序](./textQuery.cpp)** :  
+    
+    主要用 `vector< vector< string > > `保存每行文本 ，  `map<string , set< int > > `保存对应单词出现的行号 。涉及到的主要知识点有：`vector 、map 、const 、using 、string 、istringstream `、类、友元函数、构造方法、引用、智能指针
+    
+    **效果展示 :**
+
+    ![](./textQuery.png)
