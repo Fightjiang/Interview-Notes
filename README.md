@@ -1,8 +1,9 @@
+本仓库参考 [CyC2018](https://github.com/CyC2018/CS-Notes) 建立的，不过它是主 `JAVA` ， 我是主 `C++` ，欢迎各位看官前来 `issues`
+
 | &nbsp;算法&nbsp; | 操作系统 | &nbsp;网络&nbsp;|面向对象| &nbsp;&nbsp;数据库&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;Java&nbsp;&nbsp;&nbsp;|         系统设计| &nbsp;&nbsp;&nbsp;工具&nbsp;&nbsp;&nbsp; |编码实践| &nbsp;&nbsp;&nbsp;后记&nbsp;&nbsp;&nbsp; |
 | :---: | :----: | :---: | :----: | :----: | :----: | :----: | :----: | :----: | :----: |
 | [:pencil2:](#pencil2-算法) | [:computer:](#computer-操作系统) | [:cloud:](#cloud-网络) | [:art:](#art-面向对象) | [:floppy_disk:](#floppy_disk-数据库) |[:coffee:](#coffee-java)| [:bulb:](#bulb-系统设计) |[:wrench:](#wrench-工具)| [:watermelon:](#watermelon-编码实践) |[:memo:](#memo-后记)|
 
-本仓库参考 [CyC2018](https://github.com/CyC2018/CS-Notes) 建立的，不过它是主 `JAVA` ， 我是主 `C++` ，欢迎各位看官前来 `issues`
 
 ## :pencil2:算法
 * 笔者日常刷 `leetcode` 随机面试三个题，可能已经习惯没事就是练练题了，感觉这样才不会学了就忘，里面有笔者刷题时的题感和想法，后续会归纳分类。
